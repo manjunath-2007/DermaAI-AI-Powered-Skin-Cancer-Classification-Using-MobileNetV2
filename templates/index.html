@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DermaAI — Skin Cancer Detection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+  <main class="card">
+    <header>
+      <h1>DermaAI</h1>
+      <p>Upload a clear close-up photo of a skin lesion for AI analysis.</p>
+      <span class="badge {{ 'ok' if model_ready else 'off' }}">
+        <i></i>{{ 'AI model ready' if model_ready else 'Model offline' }}
+      </span>
+    </header>
+
+    <div id="dropzone" class="dropzone">
+      <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.bmp,.tiff"/>
+      <div id="prompt">
+        <div class="icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M8 9l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        </div>
+        <strong>Drop image here or click to browse</strong>
+        <span>PNG, JPG, JPEG, BMP, TIFF — max 16 MB</span>
+      </div>
+      <div id="preview" hidden>
+        <img id="previewImg" alt="Selected image"/>
+        <span id="fileName"></span>
+      </div>
+    </div>
+
+    <button id="analyseBtn" class="btn" disabled>Analyse Image</button>
+    <div id="error" class="error" hidden></div>
+
+    <section id="result" class="result" hidden>
+      <div class="result-label" id="resultLabel"></div>
+      <div class="result-note" id="resultNote"></div>
+      <div class="conf-row"><span>Confidence</span><strong id="confText"></strong></div>
+      <div class="bar"><div id="barFill"></div></div>
+      <button id="resetBtn" class="btn outline">Scan another image</button>
+    </section>
+
+    <p class="disclaimer">
+      This tool is for decision support only and is not a medical diagnosis.
+      Always consult a qualified dermatologist. Images are analysed in memory and are not stored.
+    </p>
+  </main>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

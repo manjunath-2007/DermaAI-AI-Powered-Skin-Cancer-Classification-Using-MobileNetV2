@@ -1,0 +1,52 @@
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.tox/
+.coverage
+htmlcov/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+
+# Local development files
+*.jpeg
+*.jpg
+*.png
+*.gif
+*.bmp
+*.tiff
+!model/*.h5
+
+# qodo / AI tooling
+.qodo/
+
+# Environment variables (if any)
+.env
+.env.local
+.env.*.local
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
