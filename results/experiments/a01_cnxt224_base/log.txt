@@ -1,0 +1,55 @@
+==============================================================================
+EXPERIMENT a01_cnxt224_base
+==============================================================================
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  config: {"arch": "convnext_tiny", "aug_strength": "medium", "bn_norm": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 20, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 24, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "patience": 6, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+  micro batch 24 : OK  peak 1.61 / 4.00 GB
+  -> micro 24 x accum 1 = effective 24
+  model    : convnext_tiny      pretrained=True  dropout=0.30 dim=768 stages=8 params=27.82 M
+==============================================================================
+EXPERIMENT a01_cnxt224_base
+==============================================================================
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  config: {"arch": "convnext_tiny", "aug_strength": "medium", "bn_norm": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 20, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 24, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "patience": 6, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+  micro batch 24 : OK  peak 1.61 / 4.00 GB
+  -> micro 24 x accum 1 = effective 24
+  model    : convnext_tiny      pretrained=True  dropout=0.30 dim=768 stages=8 params=27.82 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 27820897 / 27820897 (100.00%)

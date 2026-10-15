@@ -1,0 +1,61 @@
+==============================================================================
+EXPERIMENT a01_cnxt224
+==============================================================================
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  config: {"arch": "convnext_tiny", "aug_strength": "medium", "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 20, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "patience": 6, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.30 dim=768 stages=8 params=27.82 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 27820897 / 27820897 (100.00%)
+  ep  1/20 loss 0.5993 lr 1.50e-04 res 224 113s  auc_raw 0.8760  auc_ema 0.8774  acc_raw 0.8087  acc_ema 0.8387
+  ep  2/20 loss 0.4649 lr 3.00e-04 res 224 91s  auc_raw 0.8940  auc_ema 0.8975  acc_raw 0.8613  acc_ema 0.8480
+  ep  3/20 loss 0.3773 lr 3.00e-04 res 224 93s  auc_raw 0.9108  auc_ema 0.9117  acc_raw 0.8727  acc_ema 0.8820
+  ep  4/20 loss 0.3417 lr 2.98e-04 res 224 95s  auc_raw 0.9054  auc_ema 0.9101  acc_raw 0.8700  acc_ema 0.8713
+  ep  5/20 loss 0.3266 lr 2.91e-04 res 224 93s  auc_raw 0.9194  auc_ema 0.9200  acc_raw 0.8827  acc_ema 0.8833
+  ep  6/20 loss 0.3166 lr 2.80e-04 res 224 92s  auc_raw 0.9184  auc_ema 0.9214  acc_raw 0.8740  acc_ema 0.8800
+  ep  7/20 loss 0.3003 lr 2.66e-04 res 224 93s  auc_raw 0.9316  auc_ema 0.9329  acc_raw 0.8820  acc_ema 0.8760
+  ep  8/20 loss 0.2911 lr 2.47e-04 res 224 92s  auc_raw 0.9275  auc_ema 0.9316  acc_raw 0.8733  acc_ema 0.8753
+  ep  9/20 loss 0.2773 lr 2.26e-04 res 224 94s  auc_raw 0.9273  auc_ema 0.9299  acc_raw 0.8920  acc_ema 0.8900
+  ep 10/20 loss 0.2697 lr 2.03e-04 res 224 91s  auc_raw 0.9312  auc_ema 0.9331  acc_raw 0.8953  acc_ema 0.8953
+  ep 11/20 loss 0.2599 lr 1.79e-04 res 224 92s  auc_raw 0.9260  auc_ema 0.9301  acc_raw 0.8960  acc_ema 0.8967
+  ep 12/20 loss 0.2552 lr 1.53e-04 res 224 93s  auc_raw 0.9046  auc_ema 0.9171  acc_raw 0.8887  acc_ema 0.8927
+  ep 13/20 loss 0.2502 lr 1.27e-04 res 224 93s  auc_raw 0.9218  auc_ema 0.9214  acc_raw 0.8933  acc_ema 0.8940
+  ep 14/20 loss 0.2352 lr 1.03e-04 res 224 91s  auc_raw 0.9230  auc_ema 0.9225  acc_raw 0.8953  acc_ema 0.8960
+  ep 15/20 loss 0.2370 lr 7.95e-05 res 224 92s  auc_raw 0.9217  auc_ema 0.9225  acc_raw 0.8960  acc_ema 0.8947
+  ep 16/20 loss 0.2334 lr 5.85e-05 res 224 92s  auc_raw 0.9123  auc_ema 0.9184  acc_raw 0.8980  acc_ema 0.8960
+  early stop: 6 epochs without val AUC gain
+  train wall time 28.8 min | best val AUC 0.9331 (ema ep 9)
+
+VALIDATION SELECTION (threshold never uses the test split)
+  raw  tta=1  AUC 0.9123 | acc@0.5 0.8980 | best-acc thr 0.542 -> acc 0.8993 sens 0.6229 spec 0.9676 F1 0.7102
+  raw  tta=8  AUC 0.9182 | acc@0.5 0.9007 | best-acc thr 0.472 -> acc 0.9047 sens 0.6498 spec 0.9676 F1 0.7297
+  ema  tta=1  AUC 0.9184 | acc@0.5 0.8960 | best-acc thr 0.338 -> acc 0.8973 sens 0.6902 spec 0.9485 F1 0.7270
+  ema  tta=8  AUC 0.9230 | acc@0.5 0.9007 | best-acc thr 0.465 -> acc 0.9047 sens 0.6566 spec 0.9659 F1 0.7317
+
+  selection  : raw_tta8
+  summary    : C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\results\experiments\a01_cnxt224\summary.json
+  wall time  : 28.8 min

@@ -1,0 +1,666 @@
+
+##############################################################################
+SWEEP plan_b.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+EXPERIMENT b01_r224_ref14
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "medium", "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 14, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "multiscale": "", "patience": 14, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.30 dim=768 stages=8 params=27.82 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 27820897 / 27820897 (100.00%)
+  ep  1/14 loss 0.5970 lr 1.50e-04 res 224 115s  auc_raw 0.8737  auc_ema 0.8718  acc_raw 0.8267  acc_ema 0.8360
+  ep  2/14 loss 0.4688 lr 3.00e-04 res 224 92s  auc_raw 0.8875  auc_ema 0.8934  acc_raw 0.8620  acc_ema 0.8527
+  ep  3/14 loss 0.3804 lr 3.00e-04 res 224 91s  auc_raw 0.9145  auc_ema 0.9150  acc_raw 0.8780  acc_ema 0.8767
+  ep  4/14 loss 0.3477 lr 2.95e-04 res 224 91s  auc_raw 0.9103  auc_ema 0.9126  acc_raw 0.8687  acc_ema 0.8713
+  ep  5/14 loss 0.3220 lr 2.80e-04 res 224 93s  auc_raw 0.9270  auc_ema 0.9268  acc_raw 0.8893  acc_ema 0.8900
+  ep  6/14 loss 0.3129 lr 2.57e-04 res 224 93s  auc_raw 0.9216  auc_ema 0.9250  acc_raw 0.8767  acc_ema 0.8773
+  ep  7/14 loss 0.2957 lr 2.26e-04 res 224 92s  auc_raw 0.9255  auc_ema 0.9278  acc_raw 0.8880  acc_ema 0.8867
+  ep  8/14 loss 0.2890 lr 1.91e-04 res 224 91s  auc_raw 0.9316  auc_ema 0.9325  acc_raw 0.8880  acc_ema 0.8907
+  ep  9/14 loss 0.2774 lr 1.53e-04 res 224 92s  auc_raw 0.9250  auc_ema 0.9287  acc_raw 0.8887  acc_ema 0.8920
+  ep 10/14 loss 0.2692 lr 1.15e-04 res 224 94s  auc_raw 0.9233  auc_ema 0.9259  acc_raw 0.8947  acc_ema 0.8973
+  ep 11/14 loss 0.2660 lr 7.95e-05 res 224 92s  auc_raw 0.9208  auc_ema 0.9225  acc_raw 0.8860  acc_ema 0.8900
+  ep 12/14 loss 0.2561 lr 4.91e-05 res 224 100s  auc_raw 0.9215  auc_ema 0.9223  acc_raw 0.8967  acc_ema 0.8960
+  ep 13/14 loss 0.2567 lr 2.57e-05 res 224 95s  auc_raw 0.9230  auc_ema 0.9229  acc_raw 0.8953  acc_ema 0.8953
+  ep 14/14 loss 0.2468 lr 1.10e-05 res 224 93s  auc_raw 0.9241  auc_ema 0.9236  acc_raw 0.8953  acc_ema 0.8947
+  train wall time 25.6 min | best val AUC 0.9325 (ema ep 7)
+  loaded best checkpoint: ema epoch 7 val_auc 0.9325
+  raw_r224_tta1    AUC 0.9241 | acc@0.5 0.8953 | best-acc t=0.578 acc 0.8973 sens 0.5926 spec 0.9726 F1 0.6957
+  raw_r224_tta4    AUC 0.9249 | acc@0.5 0.8947 | best-acc t=0.615 acc 0.8973 sens 0.5892 spec 0.9734 F1 0.6944
+  raw_r224_tta8    AUC 0.9273 | acc@0.5 0.8973 | best-acc t=0.613 acc 0.8993 sens 0.5859 spec 0.9767 F1 0.6974
+  raw_r256_tta1    AUC 0.9272 | acc@0.5 0.8947 | best-acc t=0.398 acc 0.8987 sens 0.6566 spec 0.9584 F1 0.7196
+  raw_r256_tta4    AUC 0.9280 | acc@0.5 0.8940 | best-acc t=0.427 acc 0.8980 sens 0.6364 spec 0.9626 F1 0.7119
+  raw_r256_tta8    AUC 0.9303 | acc@0.5 0.8940 | best-acc t=0.330 acc 0.9013 sens 0.7172 spec 0.9468 F1 0.7422
+  raw_r288_tta1    AUC 0.9301 | acc@0.5 0.8860 | best-acc t=0.318 acc 0.8947 sens 0.6801 spec 0.9476 F1 0.7189
+  raw_r288_tta4    AUC 0.9294 | acc@0.5 0.8893 | best-acc t=0.345 acc 0.8967 sens 0.6599 spec 0.9551 F1 0.7166
+  raw_r288_tta8    AUC 0.9307 | acc@0.5 0.8887 | best-acc t=0.278 acc 0.8987 sens 0.7138 spec 0.9443 F1 0.7361
+  raw_r320_tta1    AUC 0.9256 | acc@0.5 0.8773 | best-acc t=0.375 acc 0.8893 sens 0.6195 spec 0.9559 F1 0.6891
+  raw_r320_tta4    AUC 0.9257 | acc@0.5 0.8773 | best-acc t=0.385 acc 0.8887 sens 0.6061 spec 0.9584 F1 0.6831
+  raw_r320_tta8    AUC 0.9279 | acc@0.5 0.8813 | best-acc t=0.270 acc 0.8893 sens 0.7205 spec 0.9310 F1 0.7205
+  ema_r224_tta1    AUC 0.9325 | acc@0.5 0.8907 | best-acc t=0.388 acc 0.8967 sens 0.6566 spec 0.9559 F1 0.7156
+  ema_r224_tta4    AUC 0.9335 | acc@0.5 0.8907 | best-acc t=0.328 acc 0.8960 sens 0.6869 spec 0.9476 F1 0.7234
+  ema_r224_tta8    AUC 0.9344 | acc@0.5 0.8940 | best-acc t=0.390 acc 0.8960 sens 0.6633 spec 0.9534 F1 0.7164
+  ema_r256_tta1    AUC 0.9342 | acc@0.5 0.8827 | best-acc t=0.270 acc 0.8980 sens 0.7273 spec 0.9401 F1 0.7385
+  ema_r256_tta4    AUC 0.9356 | acc@0.5 0.8847 | best-acc t=0.310 acc 0.9027 sens 0.6902 spec 0.9551 F1 0.7374
+  ema_r256_tta8    AUC 0.9365 | acc@0.5 0.8840 | best-acc t=0.320 acc 0.9027 sens 0.7071 spec 0.9510 F1 0.7420
+  ema_r288_tta1    AUC 0.9343 | acc@0.5 0.8747 | best-acc t=0.338 acc 0.8933 sens 0.6061 spec 0.9643 F1 0.6923
+  ema_r288_tta4    AUC 0.9344 | acc@0.5 0.8793 | best-acc t=0.275 acc 0.8960 sens 0.6734 spec 0.9510 F1 0.7194
+  ema_r288_tta8    AUC 0.9354 | acc@0.5 0.8820 | best-acc t=0.250 acc 0.8947 sens 0.7205 spec 0.9377 F1 0.7304
+  ema_r320_tta1    AUC 0.9280 | acc@0.5 0.8713 | best-acc t=0.268 acc 0.8847 sens 0.6532 spec 0.9418 F1 0.6916
+  ema_r320_tta4    AUC 0.9293 | acc@0.5 0.8753 | best-acc t=0.260 acc 0.8880 sens 0.6700 spec 0.9418 F1 0.7032
+  ema_r320_tta8    AUC 0.9307 | acc@0.5 0.8793 | best-acc t=0.270 acc 0.8887 sens 0.6667 spec 0.9435 F1 0.7034
+  FAILED b01_r224_ref14: 'thr_acc_metrics'
+Traceback (most recent call last):
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\sweep.py", line 128, in main
+    try:
+    
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\sweep.py", line 86, in run_one
+    cand = [k for k in res if isinstance(res[k], dict)]
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\sweep.py", line 86, in <lambda>
+    cand = [k for k in res if isinstance(res[k], dict)]
+                                               ^^^^^^^^
+KeyError: 'thr_acc_metrics'
+
+
+==============================================================================
+EXPERIMENT b02_r288
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "medium", "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 14, "final_frac": 0.02, "final_res": 288, "input_size": 288, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "multiscale": "", "patience": 14, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 3.25 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.30 dim=768 stages=8 params=27.82 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 27820897 / 27820897 (100.00%)
+  ep  1/14 loss 0.5988 lr 1.50e-04 res 288 1423s  auc_raw 0.8814  auc_ema 0.8839  acc_raw 0.8320  acc_ema 0.8433
+  ep  2/14 loss 0.4666 lr 3.00e-04 res 288 953s  auc_raw 0.8961  auc_ema 0.9033  acc_raw 0.8667  acc_ema 0.8687
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+EXPERIMENT c01_aux7
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "medium", "aux_classes": 7, "aux_label_smoothing": 0.1, "aux_mix": 0.3, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.30 dim=768 stages=8 aux=7 params=27.83 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+    aux   lr 3.000e-04  params      5383
+  trainable : 27826280 / 27826280 (100.00%)
+  ep  1/12 loss 1.1411 lr 1.50e-04 res 224 115s  auc_raw 0.8735  auc_ema 0.8726  acc_raw 0.8100  acc_ema 0.8307
+  ep  2/12 loss 0.8950 lr 3.00e-04 res 224 93s  auc_raw 0.8943  auc_ema 0.8964  acc_raw 0.8533  acc_ema 0.8473
+  ep  3/12 loss 0.7583 lr 3.00e-04 res 224 94s  auc_raw 0.9122  auc_ema 0.9119  acc_raw 0.8667  acc_ema 0.8720
+  ep  4/12 loss 0.6940 lr 2.93e-04 res 224 93s  auc_raw 0.9066  auc_ema 0.9086  acc_raw 0.8613  acc_ema 0.8687
+  ep  5/12 loss 0.6489 lr 2.72e-04 res 224 92s  auc_raw 0.9227  auc_ema 0.9227  acc_raw 0.8840  acc_ema 0.8833
+  ep  6/12 loss 0.6234 lr 2.39e-04 res 224 92s  auc_raw 0.9219  auc_ema 0.9238  acc_raw 0.8773  acc_ema 0.8787
+  ep  7/12 loss 0.5978 lr 1.98e-04 res 224 92s  auc_raw 0.9308  auc_ema 0.9304  acc_raw 0.8873  acc_ema 0.8840
+  ep  8/12 loss 0.5808 lr 1.53e-04 res 224 102s  auc_raw 0.9355  auc_ema 0.9355  acc_raw 0.8913  acc_ema 0.8920
+  ep  9/12 loss 0.5570 lr 1.08e-04 res 224 94s  auc_raw 0.9361  auc_ema 0.9365  acc_raw 0.8880  acc_ema 0.8913
+  ep 10/12 loss 0.5479 lr 6.66e-05 res 224 93s  auc_raw 0.9351  auc_ema 0.9355  acc_raw 0.8920  acc_ema 0.8940
+  ep 11/12 loss 0.5437 lr 3.41e-05 res 224 94s  auc_raw 0.9334  auc_ema 0.9349  acc_raw 0.8860  acc_ema 0.8900
+  ep 12/12 loss 0.5412 lr 1.32e-05 res 224 94s  auc_raw 0.9369  auc_ema 0.9358  acc_raw 0.8927  acc_ema 0.8893
+  train wall time 22.2 min | best val AUC 0.9369 (raw ep 11)
+  loaded best checkpoint: raw epoch 11 val_auc 0.9369
+  raw_r224   224            AUC 0.9393 | acc@0.5 0.8973 | t=0.440 acc 0.8993 sens 0.6532 spec 0.9601 F1 0.7199
+  raw_r256   256            AUC 0.9431 | acc@0.5 0.8933 | t=0.367 acc 0.9033 sens 0.6700 spec 0.9609 F1 0.7330
+  raw_ms     224+256        AUC 0.9416 | acc@0.5 0.8953 | t=0.417 acc 0.9027 sens 0.6599 spec 0.9626 F1 0.7286
+  raw_ms3    224+256+288    AUC 0.9422 | acc@0.5 0.8927 | t=0.290 acc 0.9000 sens 0.7374 spec 0.9401 F1 0.7449
+  ema_r224   224            AUC 0.9383 | acc@0.5 0.8940 | t=0.415 acc 0.8993 sens 0.6532 spec 0.9601 F1 0.7199
+  ema_r256   256            AUC 0.9418 | acc@0.5 0.8887 | t=0.340 acc 0.9040 sens 0.6835 spec 0.9584 F1 0.7382
+  ema_ms     224+256        AUC 0.9403 | acc@0.5 0.8920 | t=0.385 acc 0.9013 sens 0.6633 spec 0.9601 F1 0.7269
+  ema_ms3    224+256+288    AUC 0.9407 | acc@0.5 0.8907 | t=0.307 acc 0.8993 sens 0.7037 spec 0.9476 F1 0.7346
+  FAILED c01_aux7: 'thr_acc_metrics'
+Traceback (most recent call last):
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\sweep.py", line 129, in main
+    s = run_one(name, cfg, ctx, log)
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\sweep.py", line 87, in run_one
+    res["selection"] = max(cand, key=lambda k: res[k]["thr_acc_metrics"]["accuracy"])
+                       ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\sweep.py", line 87, in <lambda>
+    res["selection"] = max(cand, key=lambda k: res[k]["thr_acc_metrics"]["accuracy"])
+                                               ~~~~~~^^^^^^^^^^^^^^^^^^^
+KeyError: 'thr_acc_metrics'
+
+
+==============================================================================
+EXPERIMENT c02_pw4
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "medium", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "multiscale": "", "patience": 12, "pos_weight": 4.0935, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.03 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.30 dim=768 stages=8 aux=0 params=27.82 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 27820897 / 27820897 (100.00%)
+  ep  1/12 loss 0.9172 lr 1.50e-04 res 224 95s  auc_raw 0.8766  auc_ema 0.8760  acc_raw 0.7533  acc_ema 0.7927
+  ep  2/12 loss 0.8067 lr 3.00e-04 res 224 98s  auc_raw 0.9036  auc_ema 0.9044  acc_raw 0.8533  acc_ema 0.8613
+  ep  3/12 loss 0.7573 lr 3.00e-04 res 224 98s  auc_raw 0.9162  auc_ema 0.9164  acc_raw 0.8273  acc_ema 0.8447
+  ep  4/12 loss 0.7309 lr 2.93e-04 res 224 94s  auc_raw 0.9155  auc_ema 0.9175  acc_raw 0.8587  acc_ema 0.8593
+  ep  5/12 loss 0.6922 lr 2.72e-04 res 224 93s  auc_raw 0.9267  auc_ema 0.9270  acc_raw 0.8227  acc_ema 0.8300
+  ep  6/12 loss 0.6785 lr 2.39e-04 res 224 93s  auc_raw 0.9262  auc_ema 0.9276  acc_raw 0.8787  acc_ema 0.8800
+  ep  7/12 loss 0.6466 lr 1.98e-04 res 224 94s  auc_raw 0.9265  auc_ema 0.9282  acc_raw 0.8527  acc_ema 0.8660
+  ep  8/12 loss 0.6323 lr 1.53e-04 res 224 95s  auc_raw 0.9311  auc_ema 0.9314  acc_raw 0.8627  acc_ema 0.8627
+  ep  9/12 loss 0.6100 lr 1.08e-04 res 224 95s  auc_raw 0.9259  auc_ema 0.9282  acc_raw 0.8667  acc_ema 0.8700
+  ep 10/12 loss 0.5984 lr 6.66e-05 res 224 99s  auc_raw 0.9217  auc_ema 0.9248  acc_raw 0.8667  acc_ema 0.8707
+  FAILED c02_pw4: cuDNN error: CUDNN_STATUS_EXECUTION_FAILED
+Traceback (most recent call last):
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\sweep.py", line 129, in main
+    s = run_one(name, cfg, ctx, log)
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\sweep.py", line 41, in run_one
+    best = tr.train(cfg["epochs"], warmup=cfg["warmup"], final_frac=cfg["final_frac"],
+                    save_best_path=best_path)
+  File "C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\dermai_exp\engine.py", line 308, in train
+    self.scaler.scale(loss / accum).backward()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\dermai_env\Lib\site-packages\torch\_tensor.py", line 631, in backward
+    torch.autograd.backward(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        self, gradient, retain_graph, create_graph, inputs=inputs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\dermai_env\Lib\site-packages\torch\autograd\__init__.py", line 381, in backward
+    _engine_run_backward(
+    ~~~~~~~~~~~~~~~~~~~~^
+        tensors,
+        ^^^^^^^^
+    ...<5 lines>...
+        accumulate_grad=True,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\dermai_env\Lib\site-packages\torch\autograd\graph.py", line 869, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        t_outputs, *args, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )  # Calls into the C++ engine to run the backward pass
+    ^
+RuntimeError: cuDNN error: CUDNN_STATUS_EXECUTION_FAILED
+
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+EXPERIMENT c02_pw4
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "medium", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "multiscale": "", "patience": 12, "pos_weight": 4.0935, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.30 dim=768 stages=8 aux=0 params=27.82 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 27820897 / 27820897 (100.00%)
+  ep  1/12 loss 0.9172 lr 1.50e-04 res 224 134s  auc_raw 0.8766  auc_ema 0.8760  acc_raw 0.7527  acc_ema 0.7920
+  ep  2/12 loss 0.8067 lr 3.00e-04 res 224 105s  auc_raw 0.9035  auc_ema 0.9044  acc_raw 0.8533  acc_ema 0.8613
+  ep  3/12 loss 0.7573 lr 3.00e-04 res 224 105s  auc_raw 0.9162  auc_ema 0.9165  acc_raw 0.8267  acc_ema 0.8447
+  ep  4/12 loss 0.7308 lr 2.93e-04 res 224 105s  auc_raw 0.9155  auc_ema 0.9176  acc_raw 0.8587  acc_ema 0.8593
+  ep  5/12 loss 0.6922 lr 2.72e-04 res 224 104s  auc_raw 0.9266  auc_ema 0.9270  acc_raw 0.8227  acc_ema 0.8300
+  ep  6/12 loss 0.6785 lr 2.39e-04 res 224 93s  auc_raw 0.9262  auc_ema 0.9276  acc_raw 0.8787  acc_ema 0.8793
+  ep  7/12 loss 0.6466 lr 1.98e-04 res 224 93s  auc_raw 0.9264  auc_ema 0.9282  acc_raw 0.8527  acc_ema 0.8660
+  ep  8/12 loss 0.6323 lr 1.53e-04 res 224 93s  auc_raw 0.9311  auc_ema 0.9314  acc_raw 0.8633  acc_ema 0.8620
+  ep  9/12 loss 0.6099 lr 1.08e-04 res 224 98s  auc_raw 0.9260  auc_ema 0.9282  acc_raw 0.8673  acc_ema 0.8707
+  ep 10/12 loss 0.5984 lr 6.66e-05 res 224 99s  auc_raw 0.9219  auc_ema 0.9249  acc_raw 0.8667  acc_ema 0.8707
+  ep 11/12 loss 0.5954 lr 3.41e-05 res 224 116s  auc_raw 0.9213  auc_ema 0.9223  acc_raw 0.8920  acc_ema 0.8840
+  ep 12/12 loss 0.5851 lr 1.32e-05 res 224 111s  auc_raw 0.9233  auc_ema 0.9231  acc_raw 0.8807  acc_ema 0.8820
+  train wall time 24.2 min | best val AUC 0.9314 (ema ep 7)
+  loaded best checkpoint: ema epoch 7 val_auc 0.9314
+  raw_r224   224            AUC 0.9287 | acc@0.5 0.8847 | t=0.815 acc 0.8980 sens 0.5926 spec 0.9734 F1 0.6970
+  raw_r256   256            AUC 0.9312 | acc@0.5 0.8913 | t=0.665 acc 0.9020 sens 0.6902 spec 0.9543 F1 0.7361
+  raw_ms     224+256        AUC 0.9309 | acc@0.5 0.8853 | t=0.680 acc 0.8980 sens 0.6633 spec 0.9559 F1 0.7203
+  raw_ms3    224+256+288    AUC 0.9321 | acc@0.5 0.8860 | t=0.660 acc 0.9020 sens 0.6835 spec 0.9559 F1 0.7342
+  ema_r224   224            AUC 0.9349 | acc@0.5 0.8607 | t=0.757 acc 0.8947 sens 0.6465 spec 0.9559 F1 0.7085
+  ema_r256   256            AUC 0.9373 | acc@0.5 0.8700 | t=0.680 acc 0.9027 sens 0.7037 spec 0.9518 F1 0.7411
+  ema_ms     224+256        AUC 0.9368 | acc@0.5 0.8667 | t=0.765 acc 0.8973 sens 0.6263 spec 0.9643 F1 0.7072
+  ema_ms3    224+256+288    AUC 0.9372 | acc@0.5 0.8713 | t=0.672 acc 0.8973 sens 0.6869 spec 0.9493 F1 0.7260
+  -> selection ema_r256 | train 24.2 min | C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\results\experiments\c02_pw4\summary.json
+
+==============================================================================
+SWEEP SUMMARY  (sorted by validation accuracy at the val-selected threshold)
+==============================================================================
+  experiment                 sel          valAUC      thr   valAcc     min
+  c02_pw4                    ema_r256     0.9373    0.680   0.9027    24.2
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+EXPERIMENT c03_heavy_mixup
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "heavy", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.5, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.4, "mixup": 0.2, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.50 dim=768 stages=8 aux=0 params=27.82 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 27820897 / 27820897 (100.00%)
+  ep  1/12 loss 0.6170 lr 1.50e-04 res 224 146s  auc_raw 0.8684  auc_ema 0.8693  acc_raw 0.7960  acc_ema 0.8280
+  ep  2/12 loss 0.5004 lr 3.00e-04 res 224 94s  auc_raw 0.8911  auc_ema 0.8960  acc_raw 0.8600  acc_ema 0.8380
+  ep  3/12 loss 0.4145 lr 3.00e-04 res 224 94s  auc_raw 0.9060  auc_ema 0.9068  acc_raw 0.8560  acc_ema 0.8567
+  ep  4/12 loss 0.3850 lr 2.93e-04 res 224 94s  auc_raw 0.9105  auc_ema 0.9131  acc_raw 0.8733  acc_ema 0.8680
+  ep  5/12 loss 0.3716 lr 2.72e-04 res 224 94s  auc_raw 0.9203  auc_ema 0.9206  acc_raw 0.8860  acc_ema 0.8833
+  ep  6/12 loss 0.3638 lr 2.39e-04 res 224 93s  auc_raw 0.9204  auc_ema 0.9213  acc_raw 0.8713  acc_ema 0.8733
+  ep  7/12 loss 0.3504 lr 1.98e-04 res 224 137s  auc_raw 0.9280  auc_ema 0.9288  acc_raw 0.8747  acc_ema 0.8733
+  ep  8/12 loss 0.3528 lr 1.53e-04 res 224 142s  auc_raw 0.9300  auc_ema 0.9306  acc_raw 0.8773  acc_ema 0.8813
+  ep  9/12 loss 0.3276 lr 1.08e-04 res 224 143s  auc_raw 0.9296  auc_ema 0.9306  acc_raw 0.8787  acc_ema 0.8780
+  ep 10/12 loss 0.3315 lr 6.66e-05 res 224 146s  auc_raw 0.9323  auc_ema 0.9321  acc_raw 0.8840  acc_ema 0.8853
+  ep 11/12 loss 0.3306 lr 3.41e-05 res 224 151s  auc_raw 0.9336  auc_ema 0.9332  acc_raw 0.8793  acc_ema 0.8827
+  ep 12/12 loss 0.3329 lr 1.32e-05 res 224 141s  auc_raw 0.9340  auc_ema 0.9337  acc_raw 0.8867  acc_ema 0.8840
+  train wall time 28.7 min | best val AUC 0.9340 (raw ep 11)
+  loaded best checkpoint: raw epoch 11 val_auc 0.9340
+  raw_r224   224            AUC 0.9362 | acc@0.5 0.8833 | t=0.422 acc 0.8933 sens 0.6465 spec 0.9543 F1 0.7059
+  raw_r256   256            AUC 0.9366 | acc@0.5 0.8873 | t=0.340 acc 0.8960 sens 0.7003 spec 0.9443 F1 0.7273
+  raw_ms     224+256        AUC 0.9370 | acc@0.5 0.8887 | t=0.400 acc 0.8947 sens 0.6566 spec 0.9534 F1 0.7117
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+EXPERIMENT c03_heavy_mixup
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "heavy", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.5, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.4, "mixup": 0.2, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.50 dim=768 stages=8 aux=0 params=27.82 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  10817280
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 27820897 / 27820897 (100.00%)
+  ep  1/12 loss 0.6170 lr 1.50e-04 res 224 121s  auc_raw 0.8684  auc_ema 0.8693  acc_raw 0.7953  acc_ema 0.8280
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+COMPLETE VALIDATION c03_heavy_mixup
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "heavy", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.5, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.4, "mixup": 0.2, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.50 dim=768 stages=8 aux=0 params=27.82 M
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+COMPLETE VALIDATION c03_heavy_mixup
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "heavy", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.5, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.4, "mixup": 0.2, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.50 dim=768 stages=8 aux=0 params=27.82 M
+  loaded best checkpoint: ema epoch 0 val_auc 0.8693
+  raw_r224   224            SKIP (already exists)
+  raw_r224   224            AUC 0.9362 | acc@0.5 0.8833 | t=0.422 acc 0.8933 sens 0.6465 spec 0.9543 F1 0.7059
+  raw_r256   256            SKIP (already exists)
+  raw_r256   256            AUC 0.9366 | acc@0.5 0.8873 | t=0.340 acc 0.8960 sens 0.7003 spec 0.9443 F1 0.7273
+  raw_ms     224+256        SKIP (already exists)
+  raw_ms     224+256        AUC 0.9370 | acc@0.5 0.8887 | t=0.400 acc 0.8947 sens 0.6566 spec 0.9534 F1 0.7117
+  raw_ms3    224+256+288    AUC 0.5663 | acc@0.5 0.8013 | t=0.502 acc 0.8020 sens 0.0000 spec 1.0000 F1 0.0000
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+COMPLETE VALIDATION c03_heavy_mixup
+==============================================================================
+  config: {"arch": "convnext_tiny", "aug_strength": "heavy", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.5, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.4, "mixup": 0.2, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 2.05 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_tiny      pretrained=True  dropout=0.50 dim=768 stages=8 aux=0 params=27.82 M
+  loaded best checkpoint: ema epoch 0 val_auc 0.8693
+  raw_r224   224            SKIP (already exists)
+  raw_r224   224            AUC 0.9362 | acc@0.5 0.8833 | t=0.422 acc 0.8933 sens 0.6465 spec 0.9543 F1 0.7059
+  raw_r256   256            SKIP (already exists)
+  raw_r256   256            AUC 0.9366 | acc@0.5 0.8873 | t=0.340 acc 0.8960 sens 0.7003 spec 0.9443 F1 0.7273
+  raw_ms     224+256        SKIP (already exists)
+  raw_ms     224+256        AUC 0.9370 | acc@0.5 0.8887 | t=0.400 acc 0.8947 sens 0.6566 spec 0.9534 F1 0.7117
+  raw_ms3    224+256+288    SKIP (already exists)
+  raw_ms3    224+256+288    AUC 0.5663 | acc@0.5 0.8013 | t=0.502 acc 0.8020 sens 0.0000 spec 1.0000 F1 0.0000
+  ema_r224   224            AUC 0.8715 | acc@0.5 0.8340 | t=0.520 acc 0.8420 sens 0.4983 spec 0.9268 F1 0.5553
+  ema_r256   256            AUC 0.8721 | acc@0.5 0.8327 | t=0.517 acc 0.8427 sens 0.4781 spec 0.9327 F1 0.5462
+  ema_ms     224+256        AUC 0.8721 | acc@0.5 0.8327 | t=0.527 acc 0.8427 sens 0.4478 spec 0.9401 F1 0.5299
+  ema_ms3    224+256+288    AUC 0.8718 | acc@0.5 0.8300 | t=0.520 acc 0.8420 sens 0.4680 spec 0.9343 F1 0.5398
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+SWEEP SUMMARY  (sorted by validation accuracy at the val-selected threshold)
+==============================================================================
+  experiment                 sel          valAUC      thr   valAcc     min
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+SWEEP SUMMARY  (sorted by validation accuracy at the val-selected threshold)
+==============================================================================
+  experiment                 sel          valAUC      thr   valAcc     min
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+EXPERIMENT c04_cnxts
+==============================================================================
+  config: {"arch": "convnext_small", "aug_strength": "medium", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 3.22 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_small     pretrained=True  dropout=0.30 dim=768 stages=8 aux=0 params=49.46 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  32451840
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 49455457 / 49455457 (100.00%)
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+EXPERIMENT c04_cnxts
+==============================================================================
+  config: {"arch": "convnext_small", "aug_strength": "medium", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 3.22 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_small     pretrained=True  dropout=0.30 dim=768 stages=8 aux=0 params=49.46 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  32451840
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 49455457 / 49455457 (100.00%)
+  ep  1/12 loss 0.6065 lr 1.50e-04 res 224 1399s  auc_raw 0.8671  auc_ema 0.8678  acc_raw 0.7987  acc_ema 0.8213
+
+##############################################################################
+SWEEP plan_c.json | 5 experiments
+##############################################################################
+  production model (never opened): C:\Users\Manjunath\OneDrive\Desktop\MINI3\skin-cancer-app-simple\skin-cancer-app\model\skin_cancer_mobilenetv2.h5
+  torch 2.11.0+cu128 | CUDA 12.8 | cudnn 91900
+  GPU  NVIDIA GeForce RTX 2050 | 4.00 GB VRAM | sm_86
+  dataset root : D:\User\Downloads\archive
+  metadata csv : D:\User\Downloads\archive\HAM10000_metadata.csv
+  jpgs         : 10015
+  images 10015 | lesions 7470 | dx {'nv': 6705, 'mel': 1113, 'bkl': 1099, 'bcc': 514, 'akiec': 327, 'vasc': 142, 'df': 115}
+
+  split    images   lesions  class counts
+  train      7010      5229  {'Non-Cancer': 5641, 'Cancer': 1369}
+  val        1500      1120  {'Non-Cancer': 1203, 'Cancer': 297}
+  test       1505      1121  {'Non-Cancer': 1217, 'Cancer': 288}
+  LEAKAGE CHECK : PASS (0 shared lesions)
+  MATCHES PROD SPLIT (model_card.json) : YES
+  master cache : reuse D:\dermai_cache\ham10000_master_384x384_u8.npy (10015 x 384x384x3 u8, 4.13 GB)
+
+==============================================================================
+EXPERIMENT c04_cnxts
+==============================================================================
+  config: {"arch": "convnext_small", "aug_strength": "medium", "aux_classes": 0, "aux_label_smoothing": 0.1, "aux_mix": 0.0, "aux_weight": 0.3, "bn_norm": true, "channels_last": true, "clip_grad": 1.0, "cutmix": 0.0, "dropout": 0.3, "effective_batch": 32, "ema_decay": 0.999, "epochs": 12, "final_frac": 0.02, "final_res": 224, "input_size": 224, "label_smoothing": 0.05, "lr_backbone": 3e-05, "lr_head": 0.0003, "max_micro_batch": 32, "micro_batch": 0, "min_micro_batch": 2, "mix_p": 0.5, "mixup": 0.0, "multiscale": "", "patience": 12, "pos_weight": 1.0, "pretrained": true, "res_schedule": false, "res_switch_epoch": 3, "seed": 42, "stage_decay": 0.7, "tta": 8, "tta_sizes": "", "unfreeze": -1, "warmup": 2, "weight_decay": 0.05}
+  micro batch 32 : OK  peak 3.22 / 4.00 GB
+  -> micro 32 x accum 1 = effective 32
+  model    : convnext_small     pretrained=True  dropout=0.30 dim=768 stages=8 aux=0 params=49.46 M
+    unfreeze 8/8 stage groups | stage_decay 0.70
+    s0    lr 2.100e-05  params      4896
+    s1    lr 2.210e-05  params    237888
+    s2    lr 2.325e-05  params     74112
+    s3    lr 2.447e-05  params    918144
+    s4    lr 2.575e-05  params    295680
+    s5    lr 2.709e-05  params  32451840
+    s6    lr 2.851e-05  params   1181184
+    s7    lr 3.000e-05  params  14289408
+    head  lr 3.000e-04  params      2305
+  trainable : 49455457 / 49455457 (100.00%)

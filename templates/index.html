@@ -1,54 +1,410 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DermaAI — Skin Cancer Detection</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DermaScan - check a skin spot for early signs of skin cancer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f5f7f9; --card:#fff; --ink:#14212b; --muted:#5a6a78; --line:#d9e1e8;
+  --accent:#1f5fa8; --accent-d:#174d8a;
+  --bad:#b42318; --good:#177245; --warn:#b45309;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font-family:'Public Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+:focus-visible{outline:3px solid rgba(31,95,168,.45);outline-offset:2px}
+
+header{background:var(--card);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;justify-content:space-between;align-items:center;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.15rem}
+.brand svg{width:26px;height:26px;stroke:var(--accent);fill:none;stroke-width:2}
+header nav{display:flex;gap:28px}
+header nav a{color:var(--muted);text-decoration:none;font-size:.95rem;font-weight:500}
+header nav a:hover{color:var(--accent)}
+@media (max-width:600px){header nav{display:none}}
+
+.hero{display:grid;grid-template-columns:1fr;gap:40px;padding:56px 0 36px;align-items:center}
+.hero.has-img{grid-template-columns:1.2fr .8fr}
+h1{font-size:clamp(1.9rem,4.4vw,2.7rem);line-height:1.18;font-weight:700;letter-spacing:-.01em;max-width:24ch}
+.hero p{margin-top:16px;color:var(--muted);font-size:1.08rem;max-width:56ch}
+#heroImg{display:none;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.has-img #heroImg{display:block}
+@media (max-width:820px){.hero.has-img{grid-template-columns:1fr}.hero{padding-top:36px}}
+
+.steps{display:flex;gap:32px;margin-top:28px;list-style:none;padding:0;flex-wrap:wrap}
+.steps li{display:flex;gap:10px;align-items:baseline;font-size:.95rem;color:var(--muted)}
+.steps b{color:var(--accent);font-weight:700}
+
+.work{display:grid;grid-template-columns:1fr 1fr;background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:8px;scroll-margin-top:20px}
+.pane{padding:32px;display:flex;flex-direction:column;min-height:500px}
+.pane+.pane{border-left:1px solid var(--line)}
+@media (max-width:820px){.work{grid-template-columns:1fr}.pane{padding:24px;min-height:0}.pane+.pane{border-left:0;border-top:1px solid var(--line)}}
+.pane h2{font-size:1.2rem;font-weight:600}
+.sub{color:var(--muted);font-size:.92rem;margin:4px 0 20px}
+
+.drop{flex:1;min-height:300px;border:1.5px dashed #b6c3ce;border-radius:8px;background:#fafcfd;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;cursor:pointer;transition:border-color .2s,background .2s}
+.drop:hover,.drop.over{border-color:var(--accent);background:#f2f7fc}
+.drop svg{width:34px;height:34px;stroke:var(--accent);fill:none;stroke-width:1.6;margin-bottom:12px}
+.drop b{font-weight:600}
+.drop small{color:var(--muted);margin-top:4px;font-size:.88rem}
+.pv{flex:1;display:none;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:#f0f3f6;position:relative;overflow:hidden;min-height:300px}
+.pv img{max-width:100%;max-height:340px;display:block}
+.scan{position:absolute;left:0;right:0;height:2px;background:var(--accent);display:none;animation:sc 1.8s ease-in-out infinite alternate}
+@keyframes sc{from{top:6%}to{top:94%}}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btn{font:inherit;font-weight:600;font-size:.95rem;border-radius:6px;padding:11px 20px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){background:#f2f5f8;border-color:#b6c3ce}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.main{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.main:hover:not(:disabled){background:var(--accent-d);border-color:var(--accent-d)}
+.err{display:none;margin-top:14px;padding:11px 14px;border-radius:6px;background:#fef3f2;border:1px solid #f4b8b2;color:#7a1a12;font-size:.92rem}
+.quality-warnings{display:none;margin-top:14px;padding:12px 14px;border-radius:6px;background:#fff7ed;border:1px solid #f1c99a;color:var(--warn);font-size:.92rem}
+.quality-warnings.visible{display:block}
+.quality-warnings .qw-title{font-weight:600;margin-bottom:6px;font-size:.95rem}
+.quality-warnings ul{list-style:none;padding:0;margin:0}
+.quality-warnings li{margin:4px 0;padding-left:22px;position:relative}
+.quality-warnings li:before{content:"\26A0";position:absolute;left:0;font-size:.85rem}
+
+.panel{flex:1;display:flex;flex-direction:column}
+.idle,.load{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);gap:12px;padding:24px;font-size:.95rem}
+.load{display:none}
+.ring{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s .8s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.out{display:none;flex:1;flex-direction:column}
+.badge{align-self:flex-start;padding:3px 10px;border-radius:4px;font-weight:600;font-size:.88rem;border:1px solid}
+.badge.bad{color:var(--bad);background:#fef3f2;border-color:#f4b8b2}
+.badge.good{color:var(--good);background:#effaf3;border-color:#a9dcbd}
+.badge.warn{color:var(--warn);background:#fff7ed;border-color:#f1c99a}
+.verdict{font-size:1.5rem;line-height:1.3;font-weight:600;margin:14px 0 8px}
+.advice{color:var(--muted);margin-bottom:20px}
+.bar{margin:10px 0}
+.bar .l{display:flex;justify-content:space-between;font-size:.92rem;font-weight:500;margin-bottom:5px}
+.track{height:8px;border-radius:4px;background:#e8edf1;overflow:hidden}
+.fill{height:100%;width:0;transition:width 1s ease}
+.note{display:none;margin-top:12px;font-size:.9rem;color:var(--warn);font-weight:500}
+.fine{font-size:.85rem;color:var(--muted);margin-top:14px}
+
+.guide{display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:56px 0 64px}
+@media (max-width:820px){.guide{grid-template-columns:1fr;gap:32px;padding:40px 0 48px}}
+.guide h3{font-size:1.1rem;font-weight:600;margin-bottom:10px}
+.guide ul{padding-left:18px;color:var(--muted)}
+.guide li{margin:8px 0}
+.guide li b{color:var(--ink);font-weight:600}
+/* heatmap */
+.heatmap-row{display:none;gap:12px;margin-bottom:16px}
+.heatmap-row.visible{display:grid;grid-template-columns:1fr 1fr}
+.heatmap-col{display:flex;flex-direction:column;gap:6px}
+.heatmap-col span{font-size:.8rem;color:var(--muted);font-weight:500;text-align:center}
+.heatmap-col img{width:100%;border-radius:6px;border:1px solid var(--line)}
+/* future work section */
+.fw{padding:56px 0 64px;border-top:1px solid var(--line)}
+.fw h2{font-size:1.45rem;font-weight:700;margin-bottom:6px}
+.fw>.sub{margin-bottom:32px}
+.fw-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:820px){.fw-grid{grid-template-columns:1fr}}
+.fw-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px}
+.fw-card h3{font-size:1.05rem;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.fw-tag{font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:4px;border:1px solid}
+.fw-tag.done{color:var(--good);background:#effaf3;border-color:#a9dcbd}
+.fw-tag.planned{color:var(--accent);background:#eef4fc;border-color:#b3cef0}
+.fw-card p{font-size:.92rem;color:var(--muted);line-height:1.6}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
 </head>
 <body>
-  <main class="card">
-    <header>
-      <h1>DermaAI</h1>
-      <p>Upload a clear close-up photo of a skin lesion for AI analysis.</p>
-      <span class="badge {{ 'ok' if model_ready else 'off' }}">
-        <i></i>{{ 'AI model ready' if model_ready else 'Model offline' }}
-      </span>
-    </header>
+<header>
+  <div class="wrap">
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="M9 12h6M12 9v6"/></svg>DermaScan</div>
+    <nav><a href="#how">How it works</a><a href="#check">Check a photo</a><a href="#guide">Guidance</a><a href="#future">Future work</a></nav>
+  </div>
+</header>
 
-    <div id="dropzone" class="dropzone">
-      <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.bmp,.tiff"/>
-      <div id="prompt">
-        <div class="icon">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a3a5c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V5M8 9l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-        </div>
-        <strong>Drop image here or click to browse</strong>
-        <span>PNG, JPG, JPEG, BMP, TIFF — max 16 MB</span>
+<div class="wrap">
+  <section class="hero" id="how">
+    <div>
+      <h1>Check a skin spot for early signs of skin cancer</h1>
+      <p>Upload a photo of a skin spot. The scan estimates whether it shows signs of skin cancer and gives you a report to share with your doctor.</p>
+      <ol class="steps">
+        <li><b>1</b>Upload a photo</li>
+        <li><b>2</b>Run the scan</li>
+        <li><b>3</b>Review and save the report</li>
+      </ol>
+    </div>
+    <img id="heroImg" alt="">
+  </section>
+
+  <section class="work" id="check">
+    <div class="pane">
+      <h2>Upload photo</h2>
+      <p class="sub">JPG, JPEG or PNG, up to 10 MB.</p>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose or drop an image">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <b>Drop an image here or click to browse</b>
+        <small>On a phone you can take a photo with the camera.</small>
       </div>
-      <div id="preview" hidden>
-        <img id="previewImg" alt="Selected image"/>
-        <span id="fileName"></span>
+      <input type="file" id="file" accept="image/png,image/jpeg" hidden>
+      <div class="pv" id="pv"><img id="img" alt="Selected skin photo"><div class="scan" id="scan"></div></div>
+      <div class="quality-warnings" id="qualityWarningsImage" role="status" aria-live="polite"></div>
+      <div class="err" id="err" role="alert"></div>
+      <div class="row">
+        <button class="btn main" id="analyze" disabled>Analyze image</button>
+        <button class="btn" id="change" style="display:none">Change photo</button>
+        <button class="btn" id="remove" style="display:none">Remove</button>
       </div>
     </div>
 
-    <button id="analyseBtn" class="btn" disabled>Analyse Image</button>
-    <div id="error" class="error" hidden></div>
+    <div class="pane" aria-live="polite">
+      <h2>Result</h2>
+      <p class="sub">Your result appears here after the scan.</p>
+      <div class="panel">
+        <div class="idle" id="idle"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/></svg><span>No image scanned yet.<br>Add a photo and select Analyze image.</span></div>
+        <div class="load" id="load"><div class="ring"></div><span>Scanning image...</span></div>
+<div class="out" id="out">
+            <div class="quality-warnings" id="qualityWarningsResult" role="status" aria-live="polite"></div>
+            <span class="badge" id="badge"></span>
+            <div class="verdict" id="verdict"></div>
+            <p class="advice" id="advice"></p>
+            <!-- Grad-CAM heatmap -->
+            <div class="heatmap-row" id="heatmapRow">
+              <div class="heatmap-col"><span>Your photo</span><img id="heatOrig" alt="Original photo"></div>
+              <div class="heatmap-col"><span>Where the scan looked</span><img id="heatMap" alt="Grad-CAM heatmap"></div>
+            </div>
+            <p class="fine">This is an estimate, not a medical diagnosis.</p>
+            <div class="row" style="margin-top:auto;padding-top:16px">
+              <button class="btn main" id="pdf">Download PDF report</button>
+              <button class="btn" id="again">Scan another photo</button>
+            </div>
+          </div>
+      </div>
+    </div>
+  </section>
 
-    <section id="result" class="result" hidden>
-      <div class="result-label" id="resultLabel"></div>
-      <div class="result-note" id="resultNote"></div>
-      <div class="conf-row"><span>Confidence</span><strong id="confText"></strong></div>
-      <div class="bar"><div id="barFill"></div></div>
-      <button id="resetBtn" class="btn outline">Scan another image</button>
-    </section>
+  <section class="guide" id="guide">
+    <div>
+      <h3>Taking a good photo</h3>
+      <ul>
+        <li><b>Good light.</b> Use daylight and avoid flash glare.</li>
+        <li><b>Close and sharp.</b> Fill the frame with the spot and hold still.</li>
+        <li><b>Clear skin.</b> Move hair aside and remove marks or stickers.</li>
+        <li><b>One spot per photo.</b> Scan each spot separately.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Understanding the result</h3>
+      <ul>
+        <li><b>Affected.</b> The spot shows features linked to skin cancer. Book a dermatologist visit soon.</li>
+        <li><b>Not affected.</b> No concerning features found. Keep watching for changes in size, color or shape.</li>
+      </ul>
+    </div>
+  </section>
 
-    <p class="disclaimer">
-      This tool is for decision support only and is not a medical diagnosis.
-      Always consult a qualified dermatologist. Images are analysed in memory and are not stored.
-    </p>
-  </main>
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <section class="fw" id="future">
+    <h2>Future Work</h2>
+    <p class="sub">Planned improvements to make DermaScan more reliable and transparent.</p>
+    <div class="fw-grid">
+      <div class="fw-card">
+        <h3>Grad-CAM Visual Explanations <span class="fw-tag done">Implemented</span></h3>
+        <p>After each scan the page shows your photo alongside a heatmap highlighting the region the model focused on most. Warm colours (red/yellow) mark the highest-attention areas. This supports interpretation but does not prove the model reasoned correctly — the model may focus on hair or image artefacts rather than the lesion itself, as noted in the original paper (Figs. 7–8).</p>
+      </div>
+      <div class="fw-card">
+        <h3>Calibrated Confidence <span class="fw-tag done">Implemented</span></h3>
+        <p>Raw neural-network probabilities are adjusted with temperature scaling so that a reported 90% confidence reflects roughly 90% real-world accuracy. Every scan returns a single decision — affected or not affected — against a 0.5 threshold on that calibrated probability, rather than an uncalibrated raw score.</p>
+      </div>
+      <div class="fw-card">
+        <h3>Image-Quality Warning <span class="fw-tag done">Implemented</span></h3>
+        <p>Every scan is screened for blur, low light and overexposure before the result is shown. When a problem is detected, a notice appears next to your photo and beside the result, so you can retake the shot if needed. The check is advisory only: a usable photo is never blocked, and the prediction is always returned.</p>
+      </div>
+      <div class="fw-card">
+        <h3>Lesion-Level Data Split &amp; External Validation <span class="fw-tag planned">Planned</span></h3>
+        <p>The HAM10000 dataset contains multiple images of the same lesion. Splitting by lesion ID rather than by image prevents data leakage and gives a more honest accuracy estimate. Validating on a fully independent dataset (e.g. ISIC 2019) would further confirm whether the model generalises beyond its training distribution.</p>
+      </div>
+      <div class="fw-card">
+        <h3>Transformer-Based Architecture <span class="fw-tag planned">Planned</span></h3>
+        <p>Vision Transformers (ViT) and hybrid CNN-Transformer models have shown improved performance on dermoscopy benchmarks. Replacing or augmenting MobileNetV2 with a pre-trained ViT could improve sensitivity on rare lesion types without requiring additional labelled data.</p>
+      </div>
+      <div class="fw-card">
+        <h3>Multi-Class Classification <span class="fw-tag planned">Planned</span></h3>
+        <p>The current model outputs a single malignant/benign score. Extending it to predict all seven HAM10000 classes (melanoma, basal cell carcinoma, actinic keratosis, etc.) would give clinicians more specific information and allow the heatmap to highlight class-discriminative features per lesion type.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let chosen=null,last=null;
+const drop=$('drop'),input=$('file');
+const showErr=m=>{$('err').textContent=m;$('err').style.display=m?'block':'none'};
+const state=s=>{$('idle').style.display=s==='idle'?'flex':'none';$('load').style.display=s==='load'?'flex':'none';$('out').style.display=s==='out'?'flex':'none'};
+
+// optional hero photo: save a real image as static/img/hero.jpg and it appears automatically
+(()=>{const i=$('heroImg');i.onload=()=>document.querySelector('.hero').classList.add('has-img');i.src='/static/img/hero.jpg'})();
+
+drop.onclick=()=>input.click();
+drop.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();input.click()}};
+$('change').onclick=()=>input.click();
+['dragover','dragenter'].forEach(v=>drop.addEventListener(v,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(v=>drop.addEventListener(v,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>take(e.dataTransfer.files[0]));
+input.onchange=()=>take(input.files[0]);
+
+function take(f){
+  showErr('');if(!f)return;
+  if(!['image/jpeg','image/png'].includes(f.type))return showErr('Only JPG, JPEG or PNG images are supported.');
+  if(f.size>10*1024*1024)return showErr('That file is over 10 MB. Choose a smaller photo.');
+  chosen=f;$('img').src=URL.createObjectURL(f);
+  drop.style.display='none';$('pv').style.display='flex';
+  $('change').style.display=$('remove').style.display='inline-block';
+  $('analyze').disabled=false;state('idle');showQuality([]);
+}
+function reset(){
+  chosen=null;last=null;input.value='';$('img').src='';
+  drop.style.display='flex';$('pv').style.display='none';
+  $('change').style.display=$('remove').style.display='none';
+  $('analyze').disabled=true;showErr('');showQuality([]);state('idle');
+}
+$('remove').onclick=reset;
+$('again').onclick=()=>{reset();$('check').scrollIntoView({behavior:'smooth'})};
+
+$('analyze').onclick=async()=>{
+  if(!chosen)return;
+  showErr('');state('load');$('analyze').disabled=true;$('scan').style.display='block';showQuality([]);
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),30000);
+  try{
+    const fd=new FormData();fd.append('file',chosen);
+    const r=await fetch('/predict',{method:'POST',body:fd,signal:ctl.signal});
+    let d;try{d=await r.json()}catch(e){throw new Error('The server sent back something unexpected.')}
+    if(!r.ok||d.success===false)throw new Error(d.error||d.message||'The server could not analyze this image.');
+    show(d);
+  }catch(e){
+    state('idle');
+    if(e.name==='AbortError')showErr('The server took too long to answer. Try again.');
+    else if(e instanceof TypeError)showErr("Can't reach the server. Make sure the Flask app is running, then try again.");
+    else showErr(e.message);
+  }finally{clearTimeout(t);$('scan').style.display='none';$('analyze').disabled=false}
+};
+
+const ADV={
+  affected:'The spot shows features linked to skin cancer. Please see a dermatologist soon.',
+  not_affected:'No concerning features were found. Keep an eye out for changes in size, color or shape.'};
+
+// Image-quality warnings returned by the backend (d.quality_warnings).
+// Warnings are advisory only — the prediction is still shown.
+function showQuality(warnings){
+  const list=Array.isArray(warnings)?warnings:[];
+  document.querySelectorAll('.quality-warnings').forEach(box=>{
+    box.textContent='';
+    if(!list.length){box.classList.remove('visible');return}
+    const title=document.createElement('div');
+    title.className='qw-title';
+    title.textContent='Image quality notice';
+    const ul=document.createElement('ul');
+    list.forEach(w=>{
+      const li=document.createElement('li');
+      li.textContent=(w&&w.message)?w.message:String(w);
+      ul.appendChild(li);
+    });
+    box.appendChild(title);
+    box.appendChild(ul);
+    box.classList.add('visible');
+  });
+}
+
+function show(d){
+  let pm=d.cancer_probability;
+  if(pm==null&&d.probabilities)pm=(d.probabilities.mel||0)+(d.probabilities.bcc||0)+(d.probabilities.akiec||0);
+  if(pm==null)pm=d.cancer_detected?(d.confidence||1):1-(d.confidence||1);
+  const outcome=d.verdict||(pm>=.5?'affected':'not_affected');
+  const conf=d.confidence!=null?d.confidence:(pm>=.5?pm:1-pm);
+
+  const VERDICTS={
+    affected:'Affected',
+    not_affected:'Not Affected'
+  };
+  const verdictText=VERDICTS[outcome]||VERDICTS.not_affected;
+  const adviceText=ADV[outcome]||ADV.not_affected;
+
+  const b=$('badge');
+  if(outcome==='affected'){b.className='badge bad';b.textContent='Affected';}
+  else{b.className='badge good';b.textContent='Not Affected';}
+
+  $('verdict').textContent=verdictText;
+  $('advice').textContent=adviceText;
+
+  // Grad-CAM heatmap
+  const hrow=$('heatmapRow');
+  if(d.heatmap){
+    // Resize original to 224x224 to match heatmap dimensions (model input size)
+    const canvas=document.createElement('canvas');
+    canvas.width=224; canvas.height=224;
+    const ctx=canvas.getContext('2d');
+    const origImg=$('img');
+    ctx.drawImage(origImg, 0, 0, 224, 224);
+    $('heatOrig').src=canvas.toDataURL('image/png');
+    $('heatMap').src='data:image/png;base64,'+d.heatmap;
+    hrow.classList.add('visible');
+  } else {
+    hrow.classList.remove('visible');
+  }
+
+  showQuality(d.quality_warnings);
+  state('out');
+  last={outcome,pm,conf,verdictText,adviceText,heatmap:d.heatmap||null};
+  if(window.innerWidth<=820)$('out').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+$('pdf').onclick=()=>{
+  if(!last)return;
+  if(!window.jspdf){window.print();return}
+  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'});
+  const col=last.outcome==='affected'?[179,38,62]:[47,125,87];
+  doc.setFillColor(27,36,64);doc.rect(0,0,210,28,'F');
+  doc.setTextColor(255);doc.setFont('times','bold');doc.setFontSize(22);doc.text('DermaScan',15,18);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Skin spot scan report',195,18,{align:'right'});
+  doc.setTextColor(90,96,122);doc.setFontSize(10);
+  const id='DS-'+Date.now().toString().slice(-8);
+  doc.text('Report ID: '+id,15,38);doc.text('Date: '+new Date().toLocaleString(),195,38,{align:'right'});
+  // Original photo
+  const im=$('img'),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;
+  c.getContext('2d').drawImage(im,0,0);
+  const r=Math.min(70/im.naturalWidth,70/im.naturalHeight),w=im.naturalWidth*r,h=im.naturalHeight*r;
+  doc.addImage(c.toDataURL('image/jpeg',.85),'JPEG',15,46,w,h);
+  doc.setDrawColor(200);doc.rect(15,46,w,h);
+  doc.setFontSize(8);doc.setTextColor(90,96,122);doc.text('Your photo',15+w/2,46+h+5,{align:'center'});
+  // Heatmap (if available)
+  if(last.heatmap){
+    const hx=15+w+6;
+    doc.addImage('data:image/png;base64,'+last.heatmap,'PNG',hx,46,w,h);
+    doc.setDrawColor(200);doc.rect(hx,46,w,h);
+    doc.text('Where the scan looked',hx+w/2,46+h+5,{align:'center'});
+  }
+  const x=105;
+  doc.setFillColor(...col);doc.roundedRect(x,46,38,9,4.5,4.5,'F');
+  doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  const badgeLabel=last.outcome==='affected'?'LIKELY AFFECTED':'LIKELY NOT AFFECTED';
+  doc.text(badgeLabel,x+19,52,{align:'center'});
+  doc.setTextColor(27,36,64);doc.setFont('times','bold');doc.setFontSize(15);
+  doc.text(doc.splitTextToSize(last.verdictText,90),x,67);
+  doc.setFont('helvetica','normal');doc.setFontSize(10.5);doc.setTextColor(90,96,122);
+  doc.text(doc.splitTextToSize(last.adviceText,90),x,88);
+  const bar=(y,lab,v,rgb)=>{doc.setTextColor(27,36,64);doc.setFontSize(10);doc.text(lab,x,y);
+    doc.text((v*100).toFixed(1)+'%',195,y,{align:'right'});
+    doc.setFillColor(228,228,236);doc.roundedRect(x,y+2,90,4,2,2,'F');
+    doc.setFillColor(...rgb);if(v>0)doc.roundedRect(x,y+2,Math.max(90*v,2),4,2,2,'F')};
+  bar(112,'Not affected',1-last.pm,[47,125,87]);bar(126,'Affected',last.pm,[179,38,62]);
+  doc.setTextColor(27,36,64);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text('Scan confidence: '+(last.conf*100).toFixed(1)+'%',x,142);
+  doc.setDrawColor(200);doc.line(15,250,195,250);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(90,96,122);
+  doc.text(doc.splitTextToSize('Important: This report is an automated estimate from a student project. It is not a medical diagnosis and does not replace an examination by a qualified dermatologist. If a spot is changing, bleeding or worrying you, please see a doctor.',180),15,257);
+  doc.save('DermaScan-report-'+id+'.pdf');
+};
+</script>
 </body>
 </html>

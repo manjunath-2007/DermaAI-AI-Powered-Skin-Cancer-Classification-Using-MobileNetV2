@@ -37,6 +37,23 @@ Thumbs.db
 *.bmp
 *.tiff
 !model/*.h5
+# Required assets (must NOT be ignored):
+!test-images/
+!test-images/*.jpg
+!test-images/*.jpeg
+!test-images/*.png
+
+# Local backups / quarantine / zips (do not commit)
+_backup_*/
+_quarantine/
+*.zip
+
+# Generated experiment / investigation outputs (not required to run)
+gradcam_investigation/
+gradcam_outputs_new/
+debug_gradcam/
+visualizations/
+*.log
 
 # qodo / AI tooling
 .qodo/
@@ -50,3 +67,8 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Trained model checkpoints (>100 MB — excluded from Git; use Git LFS or manual download)
+*.pt
+results/convnext_tiny/checkpoints/
+results/experiments/*/

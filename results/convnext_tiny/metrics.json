@@ -1,0 +1,203 @@
+{
+  "model": "ConvNeXt-Tiny (torchvision IMAGENET1K_V1) + GAP + Dropout(0.30) + Linear(768,1)",
+  "framework": "PyTorch 2.11.0+cu128 / CUDA 12.8",
+  "gpu": "NVIDIA GeForce RTX 2050",
+  "gpu_vram_gb": 4.0,
+  "compute_device": "cuda",
+  "cpu_training_used": false,
+  "mixed_precision": "float16 autocast + GradScaler (torch.amp)",
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "input_contract": "float32 (B,3,224,224) raw RGB in [0,255]; ImageNet mean/std normalisation is INSIDE the module",
+  "output": "logit -> sigmoid -> p(Cancer)",
+  "label_source": "HAM10000_metadata.csv 'dx' column (filenames never used as labels)",
+  "label_mapping": {
+    "1": "Cancer (dx in mel, bcc, akiec)",
+    "0": "Non-Cancer (dx in nv, bkl, vasc, df)"
+  },
+  "dataset_root": "D:\\User\\Downloads\\archive",
+  "split": {
+    "grouping": "lesion_id from HAM10000_metadata.csv",
+    "ratios": "70/15/15",
+    "seed": 42,
+    "train_images": 7010,
+    "val_images": 1500,
+    "test_images": 1505,
+    "train_lesions": 5229,
+    "val_lesions": 1120,
+    "test_lesions": 1121,
+    "lesion_overlap_between_splits": 0,
+    "matches_production_split": {
+      "train": true,
+      "val": true,
+      "test": true
+    }
+  },
+  "class_counts": {
+    "train": {
+      "Non-Cancer": 5641,
+      "Cancer": 1369
+    },
+    "val": {
+      "Non-Cancer": 1203,
+      "Cancer": 297
+    },
+    "test": {
+      "Non-Cancer": 1217,
+      "Cancer": 288
+    }
+  },
+  "class_balancing": "WeightedRandomSampler 50/50 on the TRAIN split only",
+  "batch": {
+    "micro_batch": 16,
+    "grad_accum": 2,
+    "effective_batch": 32,
+    "steps_per_epoch": 439
+  },
+  "stage1": {
+    "epochs_requested": 10,
+    "epochs_completed": 10,
+    "lr_head": 0.001,
+    "backbone": "frozen",
+    "weight_decay": 0.0001,
+    "label_smoothing": 0.02
+  },
+  "stage2": {
+    "epochs_requested": 24,
+    "epochs_completed": 14,
+    "best_epoch": 7,
+    "early_stopping": "val ROC-AUC, patience 6",
+    "early_stopping_triggered": true,
+    "lr_head": 0.001,
+    "lr_backbone": 1e-05,
+    "unfrozen_stages": [
+      "stage3",
+      "stage4"
+    ],
+    "weight_decay": 0.0001,
+    "label_smoothing": 0.02
+  },
+  "best_checkpoint": {
+    "val_auc": 0.9133311502388809,
+    "stage": "stage2",
+    "epoch": 7
+  },
+  "threshold": {
+    "selected_on": "VALIDATION ONLY (argmax F1 over 0.05..0.95 step 0.005)",
+    "value": 0.5249999999999998,
+    "accuracy_optimal_alternative": 0.5249999999999998,
+    "sensitivity_ge_0.95_alternative": null,
+    "sensitivity_ge_0.95_achievable_on_validation": false,
+    "validation_max_recall_on_grid": 0.898989898989899,
+    "app_py_current_threshold": 0.5,
+    "app_py_changed": false
+  },
+  "validation_metrics": {
+    "threshold": 0.5249999999999998,
+    "n": 1500,
+    "accuracy": 0.8853333333333333,
+    "precision": 0.7289377289377289,
+    "recall": 0.67003367003367,
+    "cancer_sensitivity": 0.67003367003367,
+    "specificity": 0.9384871155444722,
+    "f1": 0.6982456140350877,
+    "roc_auc": 0.9133185554631937,
+    "tn": 1129,
+    "fp": 74,
+    "fn": 98,
+    "tp": 199
+  },
+  "test_metrics": {
+    "threshold": 0.5249999999999998,
+    "n": 1505,
+    "accuracy": 0.8604651162790697,
+    "precision": 0.6392857142857142,
+    "recall": 0.6215277777777778,
+    "cancer_sensitivity": 0.6215277777777778,
+    "specificity": 0.9170090386195563,
+    "f1": 0.6302816901408451,
+    "roc_auc": 0.8924324386012965,
+    "tn": 1116,
+    "fp": 101,
+    "fn": 109,
+    "tp": 179
+  },
+  "test_melanoma_sensitivity": 0.5487804878048781,
+  "test_classification_report": {
+    "Non-Cancer": {
+      "precision": 0.9110204081632653,
+      "recall": 0.9170090386195563,
+      "f1-score": 0.914004914004914,
+      "support": 1217.0
+    },
+    "Cancer": {
+      "precision": 0.6392857142857142,
+      "recall": 0.6215277777777778,
+      "f1-score": 0.6302816901408451,
+      "support": 288.0
+    },
+    "accuracy": 0.8604651162790697,
+    "macro avg": {
+      "precision": 0.7751530612244898,
+      "recall": 0.769268408198667,
+      "f1-score": 0.7721433020728796,
+      "support": 1505.0
+    },
+    "weighted avg": {
+      "precision": 0.8590206793680927,
+      "recall": 0.8604651162790697,
+      "f1-score": 0.8597110346209593,
+      "support": 1505.0
+    }
+  },
+  "test_per_dx_detection_rate": {
+    "akiec": {
+      "sum": 29,
+      "count": 41,
+      "detected_rate": 0.7073170731707317,
+      "binary_class": "Cancer"
+    },
+    "bcc": {
+      "sum": 60,
+      "count": 83,
+      "detected_rate": 0.7228915662650602,
+      "binary_class": "Cancer"
+    },
+    "mel": {
+      "sum": 90,
+      "count": 164,
+      "detected_rate": 0.5487804878048781,
+      "binary_class": "Cancer"
+    },
+    "bkl": {
+      "sum": 31,
+      "count": 162,
+      "detected_rate": 0.19135802469135801,
+      "binary_class": "Non-Cancer"
+    },
+    "df": {
+      "sum": 16,
+      "count": 32,
+      "detected_rate": 0.5,
+      "binary_class": "Non-Cancer"
+    },
+    "nv": {
+      "sum": 47,
+      "count": 1002,
+      "detected_rate": 0.046906187624750496,
+      "binary_class": "Non-Cancer"
+    },
+    "vasc": {
+      "sum": 7,
+      "count": 21,
+      "detected_rate": 0.3333333333333333,
+      "binary_class": "Non-Cancer"
+    }
+  },
+  "production_model_untouched": true,
+  "production_model_path": "C:\\Users\\Manjunath\\OneDrive\\Desktop\\MINI3\\skin-cancer-app-simple\\skin-cancer-app\\model\\skin_cancer_mobilenetv2.h5",
+  "finished_at": "2026-10-04T01:26:03.003368"
+}

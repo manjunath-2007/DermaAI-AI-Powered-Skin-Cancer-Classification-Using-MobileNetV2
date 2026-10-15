@@ -1,0 +1,44 @@
+[
+  {
+    "name": "c01_aux7",
+    "cfg": {"arch": "convnext_tiny", "input_size": 224, "epochs": 12,
+            "aug_strength": "medium", "unfreeze": -1, "lr_head": 0.0003,
+            "lr_backbone": 0.00003, "stage_decay": 0.7, "weight_decay": 0.05,
+            "label_smoothing": 0.05, "pos_weight": 1.0, "ema_decay": 0.999,
+            "dropout": 0.3, "patience": 12,
+            "aux_classes": 7, "aux_weight": 0.3, "aux_label_smoothing": 0.1,
+            "aux_mix": 0.3}
+  },
+  {
+    "name": "c02_pw4",
+    "cfg": {"arch": "convnext_tiny", "input_size": 224, "epochs": 12,
+            "aug_strength": "medium", "unfreeze": -1, "lr_head": 0.0003,
+            "lr_backbone": 0.00003, "stage_decay": 0.7, "weight_decay": 0.05,
+            "label_smoothing": 0.05, "pos_weight": 4.0935, "ema_decay": 0.999,
+            "dropout": 0.3, "patience": 12}
+  },
+  {
+    "name": "c03_heavy_mixup",
+    "cfg": {"arch": "convnext_tiny", "input_size": 224, "epochs": 12,
+            "aug_strength": "heavy", "unfreeze": -1, "lr_head": 0.0003,
+            "lr_backbone": 0.00003, "stage_decay": 0.7, "weight_decay": 0.05,
+            "label_smoothing": 0.05, "pos_weight": 1.0, "ema_decay": 0.999,
+            "dropout": 0.5, "patience": 12, "mixup": 0.2, "mix_p": 0.4}
+  },
+  {
+    "name": "c04_cnxts",
+    "cfg": {"arch": "convnext_small", "input_size": 224, "epochs": 12,
+            "aug_strength": "medium", "unfreeze": -1, "lr_head": 0.0003,
+            "lr_backbone": 0.00003, "stage_decay": 0.7, "weight_decay": 0.05,
+            "label_smoothing": 0.05, "pos_weight": 1.0, "ema_decay": 0.999,
+            "dropout": 0.3, "patience": 12}
+  },
+  {
+    "name": "c05_effv2s",
+    "cfg": {"arch": "efficientnet_v2_s", "input_size": 224, "epochs": 12,
+            "aug_strength": "medium", "unfreeze": -1, "lr_head": 0.0003,
+            "lr_backbone": 0.00003, "stage_decay": 0.7, "weight_decay": 0.05,
+            "label_smoothing": 0.05, "pos_weight": 1.0, "ema_decay": 0.999,
+            "dropout": 0.3, "patience": 12}
+  }
+]

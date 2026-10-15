@@ -1,101 +1,404 @@
 import os
 import io
 import base64
+import logging
+
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import numpy as np
 from PIL import Image, UnidentifiedImageError
 
+import config
+import quality
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+log = logging.getLogger(__name__)
+
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB
+CORS(app)
+app.config["MAX_CONTENT_LENGTH"] = config.MAX_BATCH_FILE_SIZE
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'tiff'}
-THRESHOLD = 0.23  # cancer probability above this => "Cancer Detected"
+# Model state
+model_tf = None  # MobileNetV2 (TensorFlow)
+model_pt = None  # ConvNeXt-Tiny (PyTorch)
+active_model = config.DEFAULT_MODEL  # "convnext_tiny" or "mobilenetv2"
 
-model = None
+# ──────────────────────────────────────────────────────────────────────
+# Model loading
+# ──────────────────────────────────────────────────────────────────────
 
+def load_mobilenet_model():
+    """Load MobileNetV2 Keras model."""
+    global model_tf
+    if model_tf is not None:
+        return model_tf
 
-def load_model():
-    """Load the MobileNetV2 model once at startup."""
-    global model
-    model_path = os.path.join(os.path.dirname(__file__), 'model', 'skin_cancer_mobilenetv2.h5')
-    if not os.path.exists(model_path):
-        print("Model file not found:", model_path)
-        return
+    if not os.path.exists(config.MOBILENET_PATH):
+        log.error("MobileNetV2 model file not found: %s", config.MOBILENET_PATH)
+        return None
+
     try:
         import tensorflow as tf
+        model_tf = tf.keras.models.load_model(config.MOBILENET_PATH)
+        log.info("MobileNetV2 loaded. input=%s output=%s", model_tf.input_shape, model_tf.output_shape)
+        return model_tf
+    except Exception as exc:
+        log.error("MobileNetV2 load failed: %s", exc)
+        return None
+
+
+def load_convnext_model():
+    """Load ConvNeXt-Tiny PyTorch model via inference module."""
+    global model_pt
+    if model_pt is not None:
+        return model_pt
+
+    try:
+        import inference
+        model_pt = inference.load_convnext_model()
+        log.info("ConvNeXt-Tiny loaded on %s", inference.get_device())
+        return model_pt
+    except Exception as exc:
+        log.error("ConvNeXt-Tiny load failed: %s", exc)
+        return None
+
+
+def load_active_model():
+    """Load the currently active model based on config."""
+    if active_model == "convnext_tiny":
+        return load_convnext_model()
+    elif active_model == "mobilenetv2":
+        return load_mobilenet_model()
+    else:
+        log.error("Unknown model: %s", active_model)
+        return None
+
+
+# ──────────────────────────────────────────────────────────────────────
+# MobileNetV2 (TF) helpers
+# ──────────────────────────────────────────────────────────────────────
+
+MOBILENET_INPUT_SIZE = config.MOBILENET_INPUT_SIZE
+MOBILENET_TEMPERATURE = config.MOBILENET_TEMPERATURE
+MOBILENET_THRESHOLD = config.MOBILENET_THRESHOLD
+
+
+def mobilenet_calibrated_prob(raw_prob: float) -> float:
+    """Apply temperature scaling for MobileNetV2."""
+    import math
+    logit = math.log(raw_prob / (1.0 - raw_prob + 1e-7) + 1e-7)
+    return 1.0 / (1.0 + math.exp(-logit / MOBILENET_TEMPERATURE))
+
+
+def mobilenet_grad_cam(img_array: np.ndarray, target_class: str = "affected") -> str:
+    """Return a base64-encoded PNG heatmap blended over the input image.
+    
+    Args:
+        img_array: Preprocessed image array (1, H, W, 3) in [0, 1]
+        target_class: "affected" (cancer) or "not_affected" (non-cancer)
+    """
+    import tensorflow as tf
+    import cv2
+
+    if model_tf is None:
+        return ""
+
+    # Find the last Conv layer in MobileNetV2 (before GlobalAveragePooling2D)
+    last_conv = next(
+        (l for l in reversed(model_tf.layers) if isinstance(l, tf.keras.layers.Conv2D)),
+        None,
+    )
+    if last_conv is None:
+        return ""
+
+    # Build a model that outputs:
+    # 1. The last conv layer's output (spatial feature map)
+    # 2. The pre-sigmoid logits (dense layer output before sigmoid)
+    dense_layer = model_tf.get_layer('dense')
+    logits_model = tf.keras.Model(
+        inputs=model_tf.inputs,
+        outputs=[last_conv.output, dense_layer.input]
+    )
+
+    with tf.GradientTape() as tape:
+        conv_out, logits = logits_model(img_array, training=False)
+        # logits shape: (1, 1) - pre-sigmoid cancer logit
+        # Use class-specific target on LOGITS (not probabilities)
+        if target_class == "affected":
+            loss = logits[:, 0]
+        else:
+            loss = -logits[:, 0]
+
+    grads = tape.gradient(loss, conv_out)[0]
+    weights = tf.reduce_mean(grads, axis=(0, 1))
+    cam = tf.reduce_sum(conv_out[0] * weights, axis=-1).numpy()
+    cam = np.maximum(cam, 0)
+    if cam.max() > 0:
+        cam /= cam.max()
+
+    # Optional: Gaussian smoothing before resize
+    cam = cv2.GaussianBlur(cam, (3, 3), 0)
+    if cam.max() > 0:
+        cam /= cam.max()
+
+    cam_resized = cv2.resize(cam, MOBILENET_INPUT_SIZE)
+    heatmap = cv2.applyColorMap(np.uint8(255 * cam_resized), cv2.COLORMAP_JET)
+    heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
+
+    # img_array is in [0, 1], convert back to [0, 255]
+    orig = np.uint8(img_array[0] * 255)
+    blended = np.uint8(0.55 * orig + 0.45 * heatmap)
+
+    buf = io.BytesIO()
+    Image.fromarray(blended).save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode()
+
+
+def mobilenet_preprocess(img: Image.Image) -> np.ndarray:
+    """Resize to 224×224, convert to RGB, normalise to [0,1] (matches training preprocessing)."""
+    img = img.convert("RGB").resize(MOBILENET_INPUT_SIZE)
+    arr = np.array(img, dtype="float32") / 255.0  # [0, 1] - matches training
+    return np.expand_dims(arr, axis=0)
+
+
+def mobilenet_predict_single(image: Image.Image) -> dict:
+    """Run inference on a single image using MobileNetV2."""
+    if model_tf is None:
+        raise RuntimeError("MobileNetV2 model not loaded")
+
+    arr = mobilenet_preprocess(image)
+    raw_prob = float(model_tf.predict(arr, verbose=0)[0][0])
+    cancer_prob = mobilenet_calibrated_prob(raw_prob)
+    verdict = "affected" if cancer_prob >= MOBILENET_THRESHOLD else "not_affected"
+    detected = verdict == "affected"
+    confidence = cancer_prob if cancer_prob >= 0.5 else 1.0 - cancer_prob
+    risk = "high" if cancer_prob >= config.RISK_HIGH else ("medium" if cancer_prob >= config.RISK_MEDIUM else "low")
+
+    heatmap_b64 = ""
+    if config.ENABLE_GRADCAM_SINGLE:
         try:
-            model = tf.keras.models.load_model(model_path)
-        except Exception:
-            # Fallback for models saved with newer Keras (batch_shape / optional args)
-            from tensorflow.keras.layers import InputLayer
+            import cv2  # noqa: F401
+            target = "affected" if detected else "not_affected"
+            heatmap_b64 = mobilenet_grad_cam(arr, target_class=target)
+        except Exception as exc:
+            log.warning("Grad-CAM skipped: %s", exc)
 
-            class CompatInputLayer(InputLayer):
-                def __init__(self, **kwargs):
-                    kwargs.pop('batch_shape', None)
-                    kwargs.pop('optional', None)
-                    super().__init__(**kwargs)
-
-            model = tf.keras.models.load_model(
-                model_path, custom_objects={'InputLayer': CompatInputLayer}
-            )
-        print("Model loaded successfully.")
-    except Exception as e:
-        print(f"Model load error: {e}")
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def predict(img):
-    img = img.convert('RGB').resize((224, 224))
-    arr = np.expand_dims(np.array(img) / 255.0, axis=0)
-    cancer_prob = float(model.predict(arr, verbose=0)[0][0])
-    detected = cancer_prob > THRESHOLD
-    confidence = cancer_prob if detected else 1 - cancer_prob
     return {
-        'cancer_detected': detected,
-        'label': 'Cancer Detected' if detected else 'Cancer Not Detected',
-        'confidence': round(confidence * 100, 2),
+        "cancer_probability": round(cancer_prob, 4),
+        "verdict": verdict,
+        "cancer_detected": detected,
+        "confidence": round(confidence, 4),
+        "risk_level": risk,
+        "heatmap": heatmap_b64,
+        "prediction": "Malignant (Cancer Detected)" if detected else "Benign (No Cancer Detected)",
     }
 
 
-@app.route('/')
+def mobilenet_predict_batch(images: list[Image.Image]) -> list[dict]:
+    """Run inference on a batch of images using MobileNetV2."""
+    if model_tf is None:
+        raise RuntimeError("MobileNetV2 model not loaded")
+
+    results = []
+    for img in images:
+        arr = mobilenet_preprocess(img)
+        raw_prob = float(model_tf.predict(arr, verbose=0)[0][0])
+        cancer_prob = mobilenet_calibrated_prob(raw_prob)
+        verdict = "affected" if cancer_prob >= MOBILENET_THRESHOLD else "not_affected"
+        detected = verdict == "affected"
+        confidence = cancer_prob if cancer_prob >= 0.5 else 1.0 - cancer_prob
+        risk = "high" if cancer_prob >= config.RISK_HIGH else ("medium" if cancer_prob >= config.RISK_MEDIUM else "low")
+
+        results.append({
+            "cancer_probability": round(cancer_prob, 4),
+            "verdict": verdict,
+            "cancer_detected": detected,
+            "confidence": round(confidence, 4),
+            "risk_level": risk,
+        })
+    return results
+
+
+# ──────────────────────────────────────────────────────────────────────
+# ConvNeXt-Tiny (PyTorch) helpers - delegate to inference module
+# ──────────────────────────────────────────────────────────────────────
+
+def convnext_predict_single(image: Image.Image) -> dict:
+    """Run inference on a single image using ConvNeXt-Tiny."""
+    import inference
+    return inference.predict_single(image)
+
+
+def convnext_predict_batch(images: list[Image.Image]) -> list[dict]:
+    """Run inference on a batch of images using ConvNeXt-Tiny."""
+    import inference
+    _, metas = inference.predict_batch(images)
+    for meta in metas:
+        meta["prediction"] = "Malignant (Cancer Detected)" if meta["cancer_detected"] else "Benign (No Cancer Detected)"
+    return metas
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Unified helpers
+# ──────────────────────────────────────────────────────────────────────
+
+def allowed(filename: str) -> bool:
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in config.ALLOWED_EXT
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Flask routes
+# ──────────────────────────────────────────────────────────────────────
+
+@app.route("/")
 def index():
-    return render_template('index.html', model_ready=model is not None)
+    model_ready = (active_model == "convnext_tiny" and model_pt is not None) or \
+                  (active_model == "mobilenetv2" and model_tf is not None)
+    return render_template("index.html", model_ready=model_ready, active_model=active_model)
 
 
-@app.route('/predict', methods=['POST'])
-def predict_route():
+@app.route("/health")
+def health():
+    info = {
+        "status": "ok",
+        "active_model": active_model,
+        "model_loaded": False,
+    }
+    if active_model == "convnext_tiny":
+        import inference
+        info["model_loaded"] = inference.is_model_loaded()
+        if info["model_loaded"]:
+            info.update(inference.get_model_info())
+    elif active_model == "mobilenetv2":
+        info["model_loaded"] = model_tf is not None
+    return jsonify(info)
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    """Single image prediction endpoint."""
+    model = load_active_model()
     if model is None:
-        return jsonify(error='AI model is not loaded on the server.'), 503
+        return jsonify(success=False, error="Model not loaded on server."), 503
 
-    file = request.files.get('image')
-    if not file or file.filename == '' or not allowed_file(file.filename):
-        return jsonify(error='Please upload a PNG, JPG, JPEG, BMP or TIFF image.'), 400
+    file = request.files.get("file")
+    if not file or file.filename == "":
+        return jsonify(success=False, error="No file uploaded. Use field name 'file'."), 400
+    if not allowed(file.filename):
+        return jsonify(success=False, error="Only JPG/JPEG/PNG files are accepted."), 400
+
+    raw = file.read()
+    if len(raw) > config.MAX_FILE_SIZE:
+        return jsonify(success=False, error="File exceeds 10 MB limit."), 413
 
     try:
-        data = file.read()
-        img = Image.open(io.BytesIO(data))
+        img = Image.open(io.BytesIO(raw))
         img.load()
     except (UnidentifiedImageError, OSError):
-        return jsonify(error='That file could not be read as an image.'), 400
+        return jsonify(success=False, error="Cannot read the uploaded file as an image."), 400
+
+    # Image quality check (warnings only — never rejects a decodable image)
+    quality_result = quality.check_image_quality(img)
 
     try:
-        result = predict(img)
-    except Exception as e:
-        return jsonify(error=f'Prediction failed: {e}'), 500
+        if active_model == "convnext_tiny":
+            result = convnext_predict_single(img)
+        else:
+            result = mobilenet_predict_single(img)
+    except Exception as exc:
+        log.error("Prediction error: %s", exc)
+        return jsonify(success=False, error=f"Prediction failed: {exc}"), 500
 
+    result["success"] = True
+    result["quality_warnings"] = quality_result["warnings"]
+    result["quality_metrics"] = quality_result["metrics"]
+    result["quality_is_valid"] = quality_result["is_valid"]
+    log.info("Prediction: verdict=%s cancer_prob=%.4f risk=%s model=%s",
+             result["verdict"], result["cancer_probability"], result["risk_level"], active_model)
     return jsonify(result)
+
+
+@app.route("/predict_batch", methods=["POST"])
+def predict_batch():
+    """Batch prediction endpoint (up to MAX_BATCH_SIZE images)."""
+    model = load_active_model()
+    if model is None:
+        return jsonify(success=False, error="Model not loaded on server."), 503
+
+    files = request.files.getlist("files")
+    if not files:
+        return jsonify(success=False, error="No files uploaded. Use field name 'files'."), 400
+
+    if len(files) > config.MAX_BATCH_SIZE:
+        return jsonify(success=False, error=f"Maximum {config.MAX_BATCH_SIZE} images per batch."), 400
+
+    total_size = 0
+    images = []
+    quality_results = []
+    for file in files:
+        if file.filename == "":
+            continue
+        if not allowed(file.filename):
+            return jsonify(success=False, error=f"Invalid file type: {file.filename}. Only JPG/JPEG/PNG accepted."), 400
+
+        raw = file.read()
+        total_size += len(raw)
+        if total_size > config.MAX_BATCH_FILE_SIZE:
+            return jsonify(success=False, error=f"Total batch size exceeds {config.MAX_BATCH_FILE_SIZE // (1024*1024)} MB limit."), 413
+
+        try:
+            img = Image.open(io.BytesIO(raw))
+            img.load()
+            images.append(img)
+        except (UnidentifiedImageError, OSError):
+            return jsonify(success=False, error=f"Cannot read {file.filename} as an image."), 400
+
+        # Quality check (warnings only — never rejects a decodable image)
+        quality_results.append(quality.check_image_quality(img))
+
+    if not images:
+        return jsonify(success=False, error="No valid images in batch."), 400
+
+    try:
+        if active_model == "convnext_tiny":
+            results = convnext_predict_batch(images)
+        else:
+            results = mobilenet_predict_batch(images)
+    except Exception as exc:
+        log.error("Batch prediction error: %s", exc)
+        return jsonify(success=False, error=f"Batch prediction failed: {exc}"), 500
+
+    # Attach quality info to each per-image result
+    for pred, qr in zip(results, quality_results):
+        pred["quality_warnings"] = qr["warnings"]
+        pred["quality_metrics"] = qr["metrics"]
+        pred["quality_is_valid"] = qr["is_valid"]
+
+    response = {
+        "success": True,
+        "model": active_model,
+        "count": len(results),
+        "predictions": results,
+    }
+    log.info("Batch prediction: %d images, model=%s", len(results), active_model)
+    return jsonify(response)
 
 
 @app.errorhandler(413)
 def too_large(_):
-    return jsonify(error='Image is too large (max 16 MB).'), 413
+    return jsonify(success=False, error="File exceeds size limit."), 413
 
 
-# Load at import time so it works with both `python app.py` and gunicorn/flask run.
-load_model()
+# ──────────────────────────────────────────────────────────────────────
+# Startup
+# ──────────────────────────────────────────────────────────────────────
 
-if __name__ == '__main__':
-    app.run(debug=False, port=5000)
+load_active_model()
+
+if __name__ == "__main__":
+    host = config.FLASK_HOST
+    port = config.FLASK_PORT
+    app.run(host=host, port=port, debug=config.FLASK_DEBUG, threaded=True)

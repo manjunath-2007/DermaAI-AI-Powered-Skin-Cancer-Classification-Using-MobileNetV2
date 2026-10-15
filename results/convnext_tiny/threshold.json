@@ -1,0 +1,7 @@
+{
+  "threshold": 0.5249999999999998,
+  "rule": "argmax F1 on the VALIDATION split only",
+  "accuracy_optimal_alternative": 0.5249999999999998,
+  "sensitivity_ge_0.95_alternative": null,
+  "app_py_remains": 0.5
+}
