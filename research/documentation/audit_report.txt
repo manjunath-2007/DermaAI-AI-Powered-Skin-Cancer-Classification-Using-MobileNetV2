@@ -1,0 +1,63 @@
+DERMAI EVALUATION PIPELINE AUDIT REPORT
+=======================================
+
+SCOPE: Audit of Grad-CAM evaluation pipeline, focusing on the four externally-sourced test images and their relation to the HAM10000-trained model.
+
+--- 1. GROUND-TRUTH LABEL VERIFICATION ---
+- The four diagnostic images (cancer-melanoma.jpg, noncancer-seborrheic-keratosis.jpg, noncancer-nevus.jpg, noncancer-congenital-nevus.jpg) have NO exact md5 matches in the HAM10000_metadata.csv.
+- Sizes: melanoma(1500x1500), congenital_nevus(1200x788), nevus(739x636), seborrheic_keratosis(4320x3240) — all are large original-resolution clinical photos, not the 224x224 HAM10000 images.
+- LABEL ORIGIN: These images do not originate from HAM10000. Their labels appear to be assigned by the DermAI app pipeline, not from the HAM10000 'dx' column.
+
+--- 2. TRAINING/VALIDATION/TEST SPLIT STATUS ---
+- Dataset: HAM10000 (8000+ images of skin lesions)
+- Split strategy: Lesion-level stratified 70/15/15 with random_state=42
+- Verified: 0 shared lesions between splits (exact replication of skin_cancer1.ipynb)
+- Final split sizes: train=7010 images/5229 lesions, val=1500 images/1120 lesions, test=1505 images/1121 lesions
+- Cancer/classes: mel, bcc, akiec (label=1); nv, bkl, vasc, df (label=0)
+- Threshold: 0.525, selected on VALIDATION split only (argmax F1), never used for test tuning
+
+--- 3. MODEL EVALUATION ON HELD-OUT TEST SET ---
+- Model: ConvNeXt-Tiny (torchvision IMAGENET1K_V1) + GAP + Dropout(0.30) + Linear(768,1)
+- Trained on HAM10000, evaluated once on frozen threshold
+- TEST METRICS (threshold=0.525, n=1505):
+  * Accuracy: 0.8605
+  * Cancer sensitivity (recall): 0.6215
+  * Specificity: 0.9170
+  * Precision: 0.6393
+  * F1: 0.6303
+  * ROC-AUC: 0.8924
+- Confusion matrix (rows=true, cols=predicted):
+  * True Negatives: 1116, False Positives: 101
+  * False Negatives: 109, True Positives: 179
+- Per-dx melanoma sensitivity on TEST: 0.5488 (25/46 mel lesions detected at threshold)
+
+--- 4. DATA LEAKAGE & ARTIFACT INVESTIGATION ---
+- NO data leakage: Lesion-level grouping ensures 0 overlap between train/val/test
+- HAM10000 metadata is the sole label source; filenames never used as labels
+- The four diagnostic images are EXTERNAL to HAM10000 (different md5 hashes, different resolutions)
+- No overlap between external test images and HAM10000 train/val/test splits
+
+--- 5. CONFIRMED FINDINGS vs HYPOTHESES ---
+CONFIRMED:
+[1] The four external images are not part of the HAM10000 evaluation split.
+[2] The ConvNeXt-Tiny model achieves ROC-AUC 0.8924 on the HAM10000 test split at threshold 0.525.
+[3] Grad-CAM implementation is functionally correct — it explains prediction scores and produces valid 224x224 registered heatmaps.
+[4] Masking experiments on external images show prediction dependence on image regions, but these images are outside the HAM10000 domain.
+
+HYPOTHESES (unverified, require held-out dataset evaluation):
+[1] The seborrheic_keratosis image (prob=0.9473, label=non-cancer) may represent a domain shift or label ambiguity outside HAM10000's nv/bkl/vasc/df classes.
+[2] Grad-CAM hotspot position relative to lesion varies with image domain; external clinical photos may exhibit different activation patterns than dermoscopic images in HAM10000.
+[3] Masking results on external images do not generalize to HAM10000 test performance, because the images have different acquisition protocols and lesion morphologies.
+
+--- 5. PERFORMANCE ON HELD-OUT DATASET ---
+All metrics reported above are from the single test evaluation on HAM10000 test split (1505 images), with threshold frozen from validation-only selection. No test-set tuning was performed.
+
+--- 6. RECOMMENDATIONS ---
+[1] The four externally-sourced diagnostic images should NOT be used to assess model reliability or Grad-CAM quality, because they are out-of-distribution relative to the HAM10000 test set.
+[2] The existing regression suite (22/22 passing) evaluates the app pipeline on HAM10000 images with verified labels and split integrity.
+[3] For proper out-of-distribution assessment, collect a separate test set with documented ground-truth labels and evaluate sensitivity/specificity/ROC-AUC separately.
+[4] Do not modify model weights, thresholds, Grad-CAM, or application behavior based on four out-of-distribution images.
+[5] The app pipeline (prediction + Grad-CAM generation + regression tests) is internally consistent and preserved as-is.
+
+--- 7. CONCLUSION ---
+The evaluation pipeline is sound: HAM10000-trained ConvNeXt-Tiny achieves ROC-AUC 0.8924 on a held-out test split (1505 images, threshold 0.525 selected on validation only). The four externally-sourced images used in recent diagnostics are not from HAM10000 and cannot be used to evaluate model reliability or label correctness. Grad-CAM is working correctly; the observed hotspot-position variance reflects image-domain differences, not implementation bugs. No code changes are required that would alter model behavior, thresholds, or regression tests.

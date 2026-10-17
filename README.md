@@ -47,7 +47,6 @@ skin-cancer-app/
 ├── config.py                   # Single source of truth: model, paths, thresholds
 ├── inference.py                # ConvNeXt-Tiny PyTorch backend (inference + Grad-CAM)
 ├── quality.py                  # Image-quality screening (blur/dark/overexposure)
-├── test_regression.py          # Standalone regression runner (both models)
 ├── requirements.txt            # Python dependencies
 ├── model/
 │   ├── skin_cancer_mobilenetv2.h5   # Trained MobileNetV2 model (~22 MB)
@@ -163,7 +162,7 @@ Classify a skin lesion image.
 | Input | 224×224 RGB, raw [0,255] (ImageNet norm inside graph) | 224×224 RGB, [0,1] |
 | Decision threshold | 0.525 (argmax F1 on validation) | 0.22 (argmax F1 on validation) |
 | Calibration | none (raw sigmoid probability) | temperature scaling, T = 1.0 (identity) |
-| Grad-CAM target | last Conv2d of ConvNeXt stage 4 | last Conv2D of MobileNetV2 |
+| Grad-CAM target | model.features (final spatial feature map before global average pooling) | last Conv2D of MobileNetV2 (Conv_1) |
 
 All paths, thresholds and switches live in `config.py`.
 
@@ -192,7 +191,13 @@ batch prediction, Grad-CAM validity, heatmap dimension/registration
 checks, input validation and the `/health` endpoint:
 
 ```bash
-python test_regression.py
+pytest tests/
+```
+
+Equivalent standalone runner (no pytest required):
+
+```bash
+python tests/test_regression.py
 ```
 
 Output uses plain ASCII markers (`[PASS]` / `[FAIL]` / `[ERROR]` /
