@@ -1,0 +1,66 @@
+{
+  "total_images": 10015,
+  "unique_lesions": 7470,
+  "dx_counts": {
+    "nv": 6705,
+    "mel": 1113,
+    "bkl": 1099,
+    "bcc": 514,
+    "akiec": 327,
+    "vasc": 142,
+    "df": 115
+  },
+  "duplicate_image_ids": 0,
+  "duplicate_image_id_lesion_pairs": 0,
+  "train": {
+    "images": 7010,
+    "lesions": 5229,
+    "class_counts": {
+      "Non-Cancer": 5641,
+      "Cancer": 1369
+    }
+  },
+  "train_matches_reference": true,
+  "val": {
+    "images": 1500,
+    "lesions": 1120,
+    "class_counts": {
+      "Non-Cancer": 1203,
+      "Cancer": 297
+    }
+  },
+  "val_matches_reference": true,
+  "test": {
+    "images": 1505,
+    "lesions": 1121,
+    "class_counts": {
+      "Non-Cancer": 1217,
+      "Cancer": 288
+    }
+  },
+  "test_matches_reference": true,
+  "overlap_train_val": 0,
+  "overlap_train_test": 0,
+  "overlap_val_test": 0,
+  "total_lesion_overlap": 0,
+  "label_mapping": {
+    "1": "Cancer (dx in mel, bcc, akiec)",
+    "0": "Non-Cancer (dx in nv, bkl, vasc, df)"
+  },
+  "cancer_classes": [
+    "mel",
+    "bcc",
+    "akiec"
+  ],
+  "non_cancer_classes": [
+    "nv",
+    "bkl",
+    "vasc",
+    "df"
+  ],
+  "grouping_key": "lesion_id",
+  "seed": 42,
+  "ratios": "70/15/15",
+  "status": "PASSED",
+  "failures": []
+}

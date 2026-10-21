@@ -18,8 +18,15 @@ DEFAULT_MODEL = "convnext_tiny"
 # ──────────────────────────────────────────────────────────────────────
 # ConvNeXt-Tiny (PyTorch) settings
 # ──────────────────────────────────────────────────────────────────────
-CONVNEXT_CKPT = os.path.join(RESULTS_DIR, "checkpoints", "stage2_epoch13.pt")
-CONVNEXT_BEST = os.path.join(RESULTS_DIR, "convnext_tiny_best.pt")
+# Primary: stage-2 epoch-7 "best-val" checkpoint (convnext_tiny_best.pt).
+# These are the weights that produced the published ConvNeXt-Tiny results
+# (results/convnext_tiny/metrics.json, test_proba.npy / val_proba.npy) and the
+# 0.525 decision threshold, so the deployed model and the reported metrics
+# describe the same weights.
+CONVNEXT_CKPT = os.path.join(RESULTS_DIR, "convnext_tiny_best.pt")
+# Fallback: the last stage-2 checkpoint (epoch 13), used only if the primary
+# file is absent. Its weights are NOT the ones behind the published metrics.
+CONVNEXT_BEST = os.path.join(RESULTS_DIR, "checkpoints", "stage2_epoch13.pt")
 CONVNEXT_THRESHOLD = 0.525          # argmax F1 on validation
 CONVNEXT_INPUT_SIZE = (224, 224)
 CONVNEXT_BATCH_SIZE = 32            # effective batch for inference
@@ -92,6 +99,52 @@ QUALITY_BLUR_THRESHOLD = 100.0      # Laplacian variance (scale-dependent; tuned
 QUALITY_BRIGHTNESS_DARK = 0.20      # mean brightness < 0.20 → "too dark"
 QUALITY_BRIGHTNESS_BRIGHT = 0.95    # mean brightness > 0.95 → "too bright"
 QUALITY_OVEREXPOSURE_RATIO = 0.10   # >10% near-white pixels → "overexposed"
+
+# ──────────────────────────────────────────────────────────────────────
+# Input-domain gate (out-of-distribution rejection)
+# ──────────────────────────────────────────────────────────────────────
+# The ConvNeXt classifier was trained only on HAM10000 dermoscopic images and
+# has no notion of "this image is not a skin image at all". Ordinary photos
+# that happen to contain a dark blob on a light field (fruit in a bowl, a car,
+# a classroom scene) are therefore scored as malignant lesions with high
+# confidence.
+#
+# The gate measures how far an input sits from the HAM10000 training manifold
+# in the deployed model's own 768-d penultimate feature space and refuses to
+# emit a diagnosis for images outside that domain. The reference matrix holds
+# the embeddings of the HAM10000 TRAIN split only - the validation and test
+# splits stay a clean held-out check of the gate's false-reject rate.
+#
+# Score = mean cosine distance to the k nearest reference embeddings, taken as
+# the worst case over {original, horizontal flip} (the model is orientation
+# sensitive, so an in-domain image must be explainable in at least one view).
+#
+# Calibration (see results/convnext_tiny/domain_reference_meta.json):
+#   HAM10000 val  max = 0.636   HAM10000 test max = 0.630   -> always in domain
+#   real lesion photos max = 0.877 -> in domain
+#   ordinary photographs     = 0.59 .. 0.93
+#
+# The two thresholds below define an ambiguous band. Measured on 100 real
+# photographs (30 genuine lesion photographs, 70 ordinary photographs across
+# the 14 categories), the band is NOT resolved by the MobileNetV2 second
+# opinion: that model is a *cancer* classifier, so its probability on genuine
+# lesion photographs (median 0.074) is LOWER than on ordinary photographs
+# (median 0.123) - it points the wrong way. Using it to refuse images in the
+# band caused 6 of the 7 genuine-lesion false rejections measured.
+#
+# The band is therefore resolved by the distance itself, split at its
+# midpoint: genuine lesions occupy the lower half of the band and ordinary
+# photographs the upper half. DOMAIN_BAND_SPLIT is DERIVED from the two
+# thresholds above - no new tuned number is introduced.
+DOMAIN_GATE_ENABLED = True
+DOMAIN_REFERENCE_PATH = os.path.join(RESULTS_DIR, "domain_reference.npy")
+DOMAIN_K = 5                          # k nearest reference embeddings
+DOMAIN_MAX_DISTANCE = 0.82            # upper edge of the ambiguous band
+DOMAIN_SUSPICIOUS_DISTANCE = 0.70     # lower edge of the ambiguous band
+
+# Derived: the operating point inside the ambiguous band. Everything above it
+# is treated as outside the lesion domain.
+DOMAIN_BAND_SPLIT = (DOMAIN_SUSPICIOUS_DISTANCE + DOMAIN_MAX_DISTANCE) / 2.0
 
 # ──────────────────────────────────────────────────────────────────────
 # Grad-CAM settings

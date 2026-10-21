@@ -1,0 +1,182 @@
+{
+  "threshold": 0.5249999999999998,
+  "split_source": "scripts/training/train_convnext_tiny.py (own make_split, seed 42)",
+  "cache": "D:\\dermai_cache\\ham10000_224x224_u8.npy",
+  "models": {
+    "convnext_tiny_best.pt (epoch 7 - checkpoint used by the published evaluation)": {
+      "file": "convnext_tiny_best.pt",
+      "path": "C:\\Users\\Manjunath\\OneDrive\\Desktop\\MINI3\\skin-cancer-app-simple\\skin-cancer-app\\results\\convnext_tiny\\convnext_tiny_best.pt",
+      "checkpoint_meta": {
+        "stage": "stage2",
+        "epoch": 7,
+        "val_auc": 0.9133311502388809,
+        "trained_at": "2026-10-04T00:56:44.412477",
+        "architecture": "ConvNeXt-Tiny (torchvision IMAGENET1K_V1) + GAP + Dropout(0.30) + Linear(768,1)",
+        "seed": 42,
+        "unfreeze_stages": 2
+      },
+      "pipeline_check_max_abs_diff_vs_stored_arrays": {
+        "val": 0.00551295280456543,
+        "test": 0.01068025827407837,
+        "interpretation": "reproduces the stored evaluation arrays"
+      },
+      "val_metrics": {
+        "threshold": 0.5249999999999998,
+        "n": 1500,
+        "accuracy": 0.8853333333333333,
+        "precision": 0.7306273062730627,
+        "recall": 0.6666666666666666,
+        "specificity": 0.9393183707398172,
+        "f1": 0.6971830985915493,
+        "roc_auc": 0.913325552560798,
+        "tn": 1130,
+        "fp": 73,
+        "fn": 99,
+        "tp": 198
+      },
+      "test_metrics": {
+        "threshold": 0.5249999999999998,
+        "n": 1505,
+        "accuracy": 0.8604651162790697,
+        "precision": 0.6392857142857142,
+        "recall": 0.6215277777777778,
+        "specificity": 0.9170090386195563,
+        "f1": 0.6302816901408451,
+        "roc_auc": 0.8924666757965856,
+        "tn": 1116,
+        "fp": 101,
+        "fn": 109,
+        "tp": 179
+      },
+      "val_roc_auc_recomputed": 0.913325552560798
+    },
+    "stage2_epoch13.pt (epoch 13 - checkpoint loaded by the deployed application)": {
+      "file": "stage2_epoch13.pt",
+      "path": "C:\\Users\\Manjunath\\OneDrive\\Desktop\\MINI3\\skin-cancer-app-simple\\skin-cancer-app\\results\\convnext_tiny\\checkpoints\\stage2_epoch13.pt",
+      "checkpoint_meta": {
+        "stage": "stage2",
+        "epoch": 13,
+        "best_auc": 0.9133311502388809,
+        "saved_at": "2026-10-04T01:03:13.180344"
+      },
+      "pipeline_check_max_abs_diff_vs_stored_arrays": {
+        "val": 0.5026076585054398,
+        "test": 0.5586075335741043,
+        "interpretation": "DOES NOT reproduce the stored evaluation arrays"
+      },
+      "val_metrics": {
+        "threshold": 0.5249999999999998,
+        "n": 1500,
+        "accuracy": 0.8833333333333333,
+        "precision": 0.7584745762711864,
+        "recall": 0.6026936026936027,
+        "specificity": 0.9526184538653366,
+        "f1": 0.6716697936210131,
+        "roc_auc": 0.908626301810009,
+        "tn": 1146,
+        "fp": 57,
+        "fn": 118,
+        "tp": 179
+      },
+      "test_metrics": {
+        "threshold": 0.5249999999999998,
+        "n": 1505,
+        "accuracy": 0.8644518272425249,
+        "precision": 0.6764705882352942,
+        "recall": 0.5590277777777778,
+        "specificity": 0.9367296631059984,
+        "f1": 0.6121673003802282,
+        "roc_auc": 0.8813424404272804,
+        "tn": 1140,
+        "fp": 77,
+        "fn": 127,
+        "tp": 161
+      },
+      "val_roc_auc_recomputed": 0.908626301810009
+    }
+  },
+  "published_metrics_json": {
+    "best_checkpoint": {
+      "val_auc": 0.9133311502388809,
+      "stage": "stage2",
+      "epoch": 7
+    },
+    "validation_metrics": {
+      "threshold": 0.5249999999999998,
+      "n": 1500,
+      "accuracy": 0.8853333333333333,
+      "precision": 0.7289377289377289,
+      "recall": 0.67003367003367,
+      "cancer_sensitivity": 0.67003367003367,
+      "specificity": 0.9384871155444722,
+      "f1": 0.6982456140350877,
+      "roc_auc": 0.9133185554631937,
+      "tn": 1129,
+      "fp": 74,
+      "fn": 98,
+      "tp": 199
+    },
+    "test_metrics": {
+      "threshold": 0.5249999999999998,
+      "n": 1505,
+      "accuracy": 0.8604651162790697,
+      "precision": 0.6392857142857142,
+      "recall": 0.6215277777777778,
+      "cancer_sensitivity": 0.6215277777777778,
+      "specificity": 0.9170090386195563,
+      "f1": 0.6302816901408451,
+      "roc_auc": 0.8924324386012965,
+      "tn": 1116,
+      "fp": 101,
+      "fn": 109,
+      "tp": 179
+    }
+  },
+  "published_vs_deployed_test_and_val_delta": {
+    "TEST accuracy": {
+      "published_epoch7": 0.8604651162790697,
+      "deployed_epoch13": 0.8644518272425249,
+      "delta": 0.003986710963455153
+    },
+    "TEST precision": {
+      "published_epoch7": 0.6392857142857142,
+      "deployed_epoch13": 0.6764705882352942,
+      "delta": 0.03718487394957992
+    },
+    "TEST recall/sensitivity": {
+      "published_epoch7": 0.6215277777777778,
+      "deployed_epoch13": 0.5590277777777778,
+      "delta": -0.0625
+    },
+    "TEST specificity": {
+      "published_epoch7": 0.9170090386195563,
+      "deployed_epoch13": 0.9367296631059984,
+      "delta": 0.019720624486442073
+    },
+    "TEST F1": {
+      "published_epoch7": 0.6302816901408451,
+      "deployed_epoch13": 0.6121673003802282,
+      "delta": -0.018114389760616967
+    },
+    "TEST ROC-AUC": {
+      "published_epoch7": 0.8924324386012965,
+      "deployed_epoch13": 0.8813424404272804,
+      "delta": -0.011089998174016125
+    },
+    "VAL accuracy": {
+      "published_epoch7": 0.8853333333333333,
+      "deployed_epoch13": 0.8833333333333333,
+      "delta": -0.0020000000000000018
+    },
+    "VAL F1": {
+      "published_epoch7": 0.6982456140350877,
+      "deployed_epoch13": 0.6716697936210131,
+      "delta": -0.02657582041407458
+    },
+    "VAL ROC-AUC": {
+      "published_epoch7": 0.9133185554631937,
+      "deployed_epoch13": 0.908626301810009,
+      "delta": -0.004692253653184708
+    }
+  }
+}

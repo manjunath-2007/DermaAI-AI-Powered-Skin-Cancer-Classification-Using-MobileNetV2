@@ -1,0 +1,75 @@
+{
+  "generated_by": "scripts/build_domain_reference.py",
+  "dataset": "HAM10000",
+  "reference_split": "train",
+  "reference_images": 7010,
+  "reference_leases": 5229,
+  "embedding_dim": 768,
+  "dtype": "float16",
+  "checkpoint": "convnext_tiny_best.pt",
+  "artifact": "results/convnext_tiny/domain_reference.npy",
+  "description": "Penultimate embeddings (global average pooled, layer normalised) of the HAM10000 TRAIN split under the deployed ConvNeXt-Tiny. Used by domain.py as the reference manifold for the input-domain gate. The validation and test splits are deliberately excluded so they remain a clean held-out check of the gate's false-reject rate.",
+  "score_definition": "mean cosine distance to the k nearest reference embeddings, maximised over {original, horizontal flip}",
+  "thresholds": {
+    "k": 5,
+    "max_distance": 0.82,
+    "suspicious_distance": 0.70,
+    "band_split": 0.76,
+    "band_split_definition": "(suspicious_distance + max_distance) / 2 - derived, not tuned",
+    "second_opinion_threshold": 0.22,
+    "second_opinion_model": "model/skin_cancer_mobilenetv2.h5",
+    "second_opinion_role": "advisory only - reported as second_opinion_cancer_prob, no longer part of the refusal decision"
+  },
+  "threshold_rationale": "Revised 2026-10-20 after the ISSUE-20 investigation. The gate is decided by the distance alone: analyse while score <= 0.76, refuse above it. The old rule (refuse above 0.82; inside the 0.70-0.82 band refuse when the MobileNetV2 second opinion was below 0.22) was measured on 100 real photographs and was found to refuse genuine lesions preferentially: MobileNetV2 is a cancer classifier, not a lesion-presence detector, so its probability is LOWER on genuine lesion photographs (median 0.074) than on ordinary photographs (median 0.123). That rule caused 6 of the 7 measured false rejections. The band split 0.76 is the midpoint of the two existing thresholds and is where genuine lesions and ordinary photographs separate in the measured corpus; no new tuned number and no model, threshold or stored array was changed. See DERMAI_ODD_FALSE_POSITIVE_REPORT.md section 4-5 and DERMAI_UNRESOLVED_ISSUES.md ISSUE-20.",
+  "calibration": {
+    "ham10000_val": {
+      "images": 1500,
+      "max_score": 0.6358,
+      "false_reject_rate_at_max_distance": 0.0,
+      "false_reject_rate_at_suspicious_distance": 0.0
+    },
+    "ham10000_test": {
+      "images": 1505,
+      "max_score": 0.6302,
+      "false_reject_rate_at_max_distance": 0.0,
+      "false_reject_rate_at_suspicious_distance": 0.0
+    },
+    "real_lesion_photographs": {
+      "images": 14,
+      "sources": "test-images/*.jpg, the two WhatsApp lesion photos, and Wikimedia lesion photographs",
+      "max_score": 0.795,
+      "accepted": 14,
+      "rejected": 0
+    },
+    "ordinary_photographs": {
+      "images": 126,
+      "sources": "classroom scenes, pets, food, landscapes, objects, portraits, hands, beaches, cities, cars, books, sports, flowers, interiors",
+      "score_range": [0.5982, 0.9504],
+      "rejected_at_max_distance": 125,
+      "rejected_via_second_opinion": 1,
+      "missed": 0
+    },
+    "ordinary_photographs_currently_reported_as_cancer": {
+      "images": 16,
+      "rejected_by_gate": 16,
+      "missed": 0
+    },
+    "issue20_investigation_2026_10_20": {
+      "corpus": "100 real photographs downloaded from Wikimedia Commons for this investigation: 30 genuine skin-lesion photographs and 70 ordinary photographs (5 each in poster, document, screenshot, classroom, building, scenery, furniture, book, electronics, animal, food, vehicle, selfie, body_photo)",
+      "note": "156 synthetic stand-ins were also generated; none exceeded the 0.82 cut-off (max 0.8064) while real photographs reach 0.929, so synthetic images cannot exercise the region the rule change affects",
+      "rule_comparison": {
+        "original_band_rule": {"false_rejections": "7/30 (23.3%)", "false_acceptances": "12/70 (17.1%)", "ordinary_reported_as_cancer": 0},
+        "issue20_option_a_second_opinion_can_veto": {"false_rejections": "7/30 (23.3%)", "false_acceptances": "23/70 (32.9%)", "ordinary_reported_as_cancer": 4},
+        "distance_only_band_split_0_76": {"false_rejections": "2/30 (6.7%)", "false_acceptances": "9/70 (12.9%)", "ordinary_reported_as_cancer": 0}
+      },
+      "mobilenetv2_probability_median": {"genuine_lesion_photographs": 0.074, "ordinary_photographs": 0.123},
+      "genuine_lesion_refused": ["distance 0.8301 clinical skin-tumour photograph (MobileNetV2 probability 0.066 - refused by the old rule and by ISSUE-20 option A alike)", "distance 0.7658 pigmented verrucous photograph (deployed model probability 0.824)"],
+      "ordinary_refused_per_category": {"animal": "5/5", "building": "5/5", "classroom": "5/5", "electronics": "5/5", "food": "5/5", "furniture": "5/5", "scenery": "5/5", "selfie": "5/5", "vehicle": "5/5", "body_photo": "4/5", "book": "4/5", "screenshot": "4/5", "poster": "3/5", "document": "1/5"}
+    }
+  },
+  "notes": [
+    "The gate never changes a prediction for an in-domain image: every HAM10000 validation and test lesion, and all 14 real lesion photographs, keep their original verdict.",
+    "No model weights, decision thresholds or stored prediction arrays are modified by the gate.",
+    "The reference was built from the 224x224 uint8 cache produced by the training pipeline, which is byte-identical to the deployed inference preprocessing (BICUBIC resize to 224x224)."
+  ]
+}

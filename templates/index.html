@@ -81,6 +81,7 @@ h1{font-size:clamp(1.9rem,4.4vw,2.7rem);line-height:1.18;font-weight:700;letter-
 .badge.bad{color:var(--bad);background:#fef3f2;border-color:#f4b8b2}
 .badge.good{color:var(--good);background:#effaf3;border-color:#a9dcbd}
 .badge.warn{color:var(--warn);background:#fff7ed;border-color:#f1c99a}
+.badge.neutral{color:var(--muted);background:#f3f4f8;border-color:#d7dae4}
 .verdict{font-size:1.5rem;line-height:1.3;font-weight:600;margin:14px 0 8px}
 .advice{color:var(--muted);margin-bottom:20px}
 .bar{margin:10px 0}
@@ -294,6 +295,12 @@ const ADV={
   affected:'The spot shows features linked to skin cancer. Please see a dermatologist soon.',
   not_affected:'No concerning features were found. Keep an eye out for changes in size, color or shape.'};
 
+// Outcome shown when the input-domain gate rejected the image: the model was
+// never asked for a diagnosis because the picture is not a skin lesion.
+const NOT_ANALYSABLE={
+  verdictText:'Invalid Image — Please upload a suitable skin-lesion image',
+  adviceText:'No cancer result was produced for this image. Please upload a close-up photo of a skin lesion that fills the frame, in focus and in good light.'};
+
 // Image-quality warnings returned by the backend (d.quality_warnings).
 // Warnings are advisory only — the prediction is still shown.
 function showQuality(warnings){
@@ -317,6 +324,23 @@ function showQuality(warnings){
 }
 
 function show(d){
+  // The backend refuses to emit a diagnosis for images that are not dermoscopic
+  // skin lesions (ordinary photos such as classroom scenes). In that case there
+  // is no verdict to show - only an explanation.
+  if(d.analysable===false){
+    const b=$('badge');
+    b.className='badge neutral';b.textContent='Invalid image';
+    $('verdict').textContent=NOT_ANALYSABLE.verdictText;
+    $('advice').textContent=NOT_ANALYSABLE.adviceText;
+    $('heatmapRow').classList.remove('visible');
+    showQuality(d.quality_warnings);
+    state('out');
+    last={outcome:'not_analysable',pm:null,conf:null,verdictText:NOT_ANALYSABLE.verdictText,
+          adviceText:NOT_ANALYSABLE.adviceText,heatmap:null};
+    if(window.innerWidth<=820)$('out').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
   let pm=d.cancer_probability;
   if(pm==null&&d.probabilities)pm=(d.probabilities.mel||0)+(d.probabilities.bcc||0)+(d.probabilities.akiec||0);
   if(pm==null)pm=d.cancer_detected?(d.confidence||1):1-(d.confidence||1);
@@ -363,7 +387,8 @@ $('pdf').onclick=()=>{
   if(!last)return;
   if(!window.jspdf){window.print();return}
   const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'});
-  const col=last.outcome==='affected'?[179,38,62]:[47,125,87];
+  const isNA=last.outcome==='not_analysable';
+  const col=isNA?[90,96,122]:(last.outcome==='affected'?[179,38,62]:[47,125,87]);
   doc.setFillColor(27,36,64);doc.rect(0,0,210,28,'F');
   doc.setTextColor(255);doc.setFont('times','bold');doc.setFontSize(22);doc.text('DermaScan',15,18);
   doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Skin spot scan report',195,18,{align:'right'});
@@ -387,7 +412,7 @@ $('pdf').onclick=()=>{
   const x=105;
   doc.setFillColor(...col);doc.roundedRect(x,46,38,9,4.5,4.5,'F');
   doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(10);
-  const badgeLabel=last.outcome==='affected'?'LIKELY AFFECTED':'LIKELY NOT AFFECTED';
+  const badgeLabel=isNA?'Invalid image':(last.outcome==='affected'?'LIKELY AFFECTED':'LIKELY NOT AFFECTED');
   doc.text(badgeLabel,x+19,52,{align:'center'});
   doc.setTextColor(27,36,64);doc.setFont('times','bold');doc.setFontSize(15);
   doc.text(doc.splitTextToSize(last.verdictText,90),x,67);
@@ -397,9 +422,16 @@ $('pdf').onclick=()=>{
     doc.text((v*100).toFixed(1)+'%',195,y,{align:'right'});
     doc.setFillColor(228,228,236);doc.roundedRect(x,y+2,90,4,2,2,'F');
     doc.setFillColor(...rgb);if(v>0)doc.roundedRect(x,y+2,Math.max(90*v,2),4,2,2,'F')};
-  bar(112,'Not affected',1-last.pm,[47,125,87]);bar(126,'Affected',last.pm,[179,38,62]);
-  doc.setTextColor(27,36,64);doc.setFont('helvetica','bold');doc.setFontSize(10);
-  doc.text('Scan confidence: '+(last.conf*100).toFixed(1)+'%',x,142);
+  // No probability was produced for an image outside the lesion domain, so the
+  // score bars are omitted rather than showing a misleading 0%.
+  if(!isNA){
+    bar(112,'Not affected',1-last.pm,[47,125,87]);bar(126,'Affected',last.pm,[179,38,62]);
+    doc.setTextColor(27,36,64);doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text('Scan confidence: '+(last.conf*100).toFixed(1)+'%',x,142);
+  }else{
+    doc.setTextColor(27,36,64);doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text('No result was produced for this image.',x,112);
+  }
   doc.setDrawColor(200);doc.line(15,250,195,250);
   doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(90,96,122);
   doc.text(doc.splitTextToSize('Important: This report is an automated estimate from a student project. It is not a medical diagnosis and does not replace an examination by a qualified dermatologist. If a spot is changing, bleeding or worrying you, please see a doctor.',180),15,257);

@@ -15,11 +15,14 @@ import torch
 import torch.nn as nn
 import cv2
 import torch.nn.functional as F
-from PIL import Image
+from PIL import Image, ImageOps
 
 import config
 
 log = logging.getLogger(__name__)
+
+# EXIF tag 274 = Orientation
+EXIF_ORIENTATION_TAG = 274
 
 # ──────────────────────────────────────────────────────────────────────
 # Model definition (must match train_convnext_tiny.py exactly)
@@ -79,6 +82,26 @@ class DermaConvNeXt(nn.Module):
         x = torch.flatten(x, 1)
         logits = self.head(self.dropout(x)).squeeze(1)
         return logits, features
+
+    def forward_with_embedding(self, x_u8: torch.Tensor):
+        """Forward pass returning the logit and the 768-d penultimate embedding.
+
+        The embedding is the exact vector the classifier head consumes: global
+        average pooled, layer-normalised and flattened. It is the feature space
+        the input-domain gate measures against.
+
+        Returns:
+            logits: (B,) cancer logits
+            embedding: (B, 768) penultimate features
+        """
+        x = x_u8.float().div_(255.0)
+        x = (x - self.mean) / self.std
+        x = self.features(x)
+        x = self.avgpool(x)
+        x = self.norm(x)
+        embedding = torch.flatten(x, 1)
+        logits = self.head(self.dropout(embedding)).squeeze(1)
+        return logits, embedding
 
     @staticmethod
     def _child_width(child):
@@ -163,7 +186,10 @@ def load_convnext_model() -> DermaConvNeXt:
     model.eval()
     _model = model
 
-    # Cache target layer for Grad-CAM: use model.features (final spatial feature map before GAP)
+    # Grad-CAM target layer: model.features (final spatial feature map before
+    # global average pooling). Kept for reference/debugging - the heatmap is
+    # produced with torch.autograd.grad on the feature map itself, so no hook
+    # is registered on this module.
     _last_conv_layer = model.features
 
     log.info("ConvNeXt-Tiny model loaded successfully (params: %.2f M)",
@@ -173,8 +199,43 @@ def load_convnext_model() -> DermaConvNeXt:
     return model
 
 
+def apply_exif_orientation(image: Image.Image) -> Image.Image:
+    """Return the image with its EXIF orientation applied.
+
+    Cameras (and phone galleries) store the sensor data unrotated and record
+    the intended viewing direction in the EXIF orientation tag. PIL does not
+    apply that tag on its own, so without this helper a portrait photo taken
+    with a phone is analysed rotated by 90 degrees while the browser shows the
+    user the upright picture. The ConvNeXt model is strongly orientation
+    sensitive, so this changes the prediction, and the Grad-CAM overlay would
+    not line up with the photo the user sees.
+
+    Images without an orientation tag are returned unchanged (no copy, no
+    pixel change), so this is a no-op for the HAM10000 images and for the
+    project's own clinical test images.
+    """
+    try:
+        exif = image.getexif()
+    except Exception:                                   # pragma: no cover - broken EXIF
+        return image
+    if not exif:
+        return image
+    try:
+        orientation = exif.get(EXIF_ORIENTATION_TAG)
+    except Exception:                                   # pragma: no cover - broken EXIF
+        return image
+    if orientation is None or orientation == 1:
+        return image
+    try:
+        return ImageOps.exif_transpose(image)
+    except Exception as exc:                           # pragma: no cover - broken EXIF
+        log.warning("Could not apply EXIF orientation (%s) - image left unrotated", exc)
+        return image
+
+
 def preprocess_image(image: Image.Image) -> torch.Tensor:
     """Preprocess PIL image to tensor (B, 3, 224, 224) in [0, 255]."""
+    image = apply_exif_orientation(image)
     img = image.convert("RGB").resize(config.CONVNEXT_INPUT_SIZE)
     arr = np.array(img, dtype=np.uint8)  # (H, W, 3) in [0, 255]
     tensor = torch.from_numpy(arr).permute(2, 0, 1).contiguous().unsqueeze(0)  # (1, 3, H, W)
@@ -187,27 +248,10 @@ def preprocess_batch(images: List[Image.Image]) -> torch.Tensor:
     return torch.stack(tensors, dim=0).float()  # (B, 3, H, W)
 
 
-@torch.no_grad()
-def predict_batch(images: List[Image.Image]) -> Tuple[np.ndarray, List[Dict]]:
-    """Run inference on a batch of images.
-
-    Returns:
-        probs: numpy array of cancer probabilities (N,)
-        metas: list of dicts with metadata per image
-    """
-    model = load_convnext_model()
-    device = get_device()
-
-    # Preprocess
-    batch_tensor = preprocess_batch(images).to(device, non_blocking=True)
-
-    # Inference with autocast for speed
-    with torch.amp.autocast("cuda", dtype=torch.float16, enabled=device.type == "cuda"):
-        logits = model(batch_tensor)
-        probs = torch.sigmoid(logits).float().cpu().numpy()
-
+def _metas_from_probs(probs: np.ndarray) -> List[Dict]:
+    """Build the per-image metadata dicts from cancer probabilities."""
     metas = []
-    for i, p in enumerate(probs):
+    for p in probs:
         prob = float(p)
         calibrated = prob  # No temperature scaling for ConvNeXt
         verdict = "affected" if calibrated >= config.CONVNEXT_THRESHOLD else "not_affected"
@@ -222,8 +266,53 @@ def predict_batch(images: List[Image.Image]) -> Tuple[np.ndarray, List[Dict]]:
             "confidence": round(confidence, 4),
             "risk_level": risk,
         })
+    return metas
 
-    return probs, metas
+
+@torch.no_grad()
+def _forward_batch(images: List[Image.Image]) -> Tuple[np.ndarray, np.ndarray]:
+    """Single forward pass returning cancer probabilities and penultimate embeddings."""
+    model = load_convnext_model()
+    device = get_device()
+
+    # Preprocess
+    batch_tensor = preprocess_batch(images).to(device, non_blocking=True)
+
+    # Inference with autocast for speed
+    with torch.amp.autocast("cuda", dtype=torch.float16, enabled=device.type == "cuda"):
+        logits, embedding = model.forward_with_embedding(batch_tensor)
+        probs = torch.sigmoid(logits).float().cpu().numpy()
+        embeddings = embedding.float().cpu().numpy()
+
+    return probs, embeddings
+
+
+@torch.no_grad()
+def predict_batch(images: List[Image.Image]) -> Tuple[np.ndarray, List[Dict]]:
+    """Run inference on a batch of images.
+
+    Returns:
+        probs: numpy array of cancer probabilities (N,)
+        metas: list of dicts with metadata per image
+    """
+    probs, _ = _forward_batch(images)
+    return probs, _metas_from_probs(probs)
+
+
+@torch.no_grad()
+def predict_batch_with_embeddings(images: List[Image.Image]) -> Tuple[np.ndarray, List[Dict], np.ndarray]:
+    """Run inference on a batch of images and also return the penultimate embeddings.
+
+    Same probabilities and metadata as predict_batch(); the extra return value is
+    the (N, 768) feature matrix used by the input-domain gate.
+
+    Returns:
+        probs: numpy array of cancer probabilities (N,)
+        metas: list of dicts with metadata per image
+        embeddings: numpy array of 768-d penultimate features (N, 768)
+    """
+    probs, embeddings = _forward_batch(images)
+    return probs, _metas_from_probs(probs), embeddings
 
 
 def predict_single(image: Image.Image) -> Dict:
@@ -247,41 +336,37 @@ def predict_single(image: Image.Image) -> Dict:
 
 def generate_gradcam(image: Image.Image, target_class: str = "affected") -> str:
     """Generate Grad-CAM heatmap for a single image. Returns base64 PNG.
-    
+
     Args:
         image: PIL Image
         target_class: "affected" (cancer) or "not_affected" (non-cancer)
                      Determines which class logit to use for gradients.
-    """
-    global _last_conv_layer
 
+    Thread safety
+    -------------
+    The heatmap is derived from an explicit ``torch.autograd.grad`` call on the
+    feature map that the forward pass returned. Nothing is registered on the
+    shared model and no parameter ``.grad`` is written, so two concurrent
+    requests cannot overwrite each other's activations or gradients.
+
+    The previous implementation registered a forward and a full-backward hook
+    on the shared ``model.features`` module and used ``model.zero_grad()`` plus
+    ``target.backward()``. That was not thread safe: with two concurrent
+    requests both hooks fire for both forward passes, so each request read
+    whichever activations the other request had produced last, and one
+    request's ``zero_grad()`` could wipe the gradients the other was using.
+    The autograd formulation produces bit-identical heatmaps (verified
+    max |difference| = 0 on the clinical test images) without the shared
+    state.
+    """
     model = load_convnext_model()
     device = get_device()
-
-    if _last_conv_layer is None:
-        log.warning("ConvNeXt-Tiny Grad-CAM: _last_conv_layer is None")
-        return ""
-
-    # Capture activations and gradients via registered hooks on
-    # model.features (final spatial feature map before global average pooling).
-    activations = {}
-    gradients = {}
-
-    def forward_hook(module, input, output):
-        activations['value'] = output.detach()
-
-    def full_backward_hook(module, grad_input, grad_output):
-        gradients['value'] = grad_output[0].detach()
-
-    handle_fwd = _last_conv_layer.register_forward_hook(forward_hook)
-    handle_bwd = _last_conv_layer.register_full_backward_hook(full_backward_hook)
 
     # Preprocess image
     tensor = preprocess_image(image).to(device)
 
-    # Zero gradients and forward pass — the hooks will capture
-    # model.features activations and the corresponding gradients.
-    model.zero_grad()
+    # Forward pass - the returned feature map is the gradient target, so no
+    # hook is needed and the graph is built only for this request.
     logits, features = model.forward_with_features(tensor)
 
     # Select target-class logit for gradient flow
@@ -291,20 +376,12 @@ def generate_gradcam(image: Image.Image, target_class: str = "affected") -> str:
     else:
         target = -logits[:, 0] if logits.dim() > 1 else -logits
 
-    # Backward pass
-    target.backward()
+    # Gradient of the target logit with respect to the final spatial feature
+    # map. autograd.grad does not touch the parameters' .grad attributes.
+    (grad,) = torch.autograd.grad(target, features)
 
-    # Remove hooks
-    handle_fwd.remove()
-    handle_bwd.remove()
-
-    # Retrieve cached activations and gradients
-    act = activations.get('value')
-    grad = gradients.get('value')
-
-    if act is None or grad is None:
-        log.warning("ConvNeXt-Tiny Grad-CAM: Failed to capture activations/gradients")
-        return ""
+    act = features.detach()
+    grad = grad.detach()
 
     # Log shapes and statistics
     log.info("Grad-CAM: target_layer=model.features, act_shape=%s, grad_shape=%s",

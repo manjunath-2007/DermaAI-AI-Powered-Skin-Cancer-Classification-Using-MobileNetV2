@@ -13,6 +13,8 @@ from PIL import Image, UnidentifiedImageError
 
 import config
 import quality
+import domain
+from inference import apply_exif_orientation
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
@@ -159,9 +161,30 @@ def mobilenet_grad_cam(img_array: np.ndarray, target_class: str = "affected") ->
 
 def mobilenet_preprocess(img: Image.Image) -> np.ndarray:
     """Resize to 224×224, convert to RGB, normalise to [0,1] (matches training preprocessing)."""
+    img = apply_exif_orientation(img)
     img = img.convert("RGB").resize(MOBILENET_INPUT_SIZE)
     arr = np.array(img, dtype="float32") / 255.0  # [0, 1] - matches training
     return np.expand_dims(arr, axis=0)
+
+
+def mobilenet_cancer_probability(image: Image.Image) -> float | None:
+    """Cancer probability from the independent MobileNetV2 model.
+
+    Used only as a second opinion for images that land in the ambiguous band of
+    the input-domain gate. Returns None when the model cannot be loaded so the
+    caller can fall back to keeping the image in domain (refusing a genuine
+    lesion photo because a helper model is missing is the worse error).
+    """
+    model = load_mobilenet_model()
+    if model is None:
+        return None
+    try:
+        arr = mobilenet_preprocess(image)
+        raw_prob = float(model.predict(arr, verbose=0)[0][0])
+        return float(mobilenet_calibrated_prob(raw_prob))
+    except Exception as exc:
+        log.warning("MobileNetV2 second opinion failed: %s", exc)
+        return None
 
 
 def mobilenet_predict_single(image: Image.Image) -> dict:
@@ -218,6 +241,11 @@ def mobilenet_predict_batch(images: list[Image.Image]) -> list[dict]:
             "cancer_detected": detected,
             "confidence": round(confidence, 4),
             "risk_level": risk,
+            # Batch predictions never carry a Grad-CAM heatmap, but the key is
+            # present so every item of a batch has the same shape as the
+            # single-image response.
+            "heatmap": "",
+            "prediction": "Malignant (Cancer Detected)" if detected else "Benign (No Cancer Detected)",
         })
     return results
 
@@ -238,6 +266,10 @@ def convnext_predict_batch(images: list[Image.Image]) -> list[dict]:
     _, metas = inference.predict_batch(images)
     for meta in metas:
         meta["prediction"] = "Malignant (Cancer Detected)" if meta["cancer_detected"] else "Benign (No Cancer Detected)"
+        # Batch predictions never carry a Grad-CAM heatmap, but the key is
+        # present so every item of a batch has the same shape as the
+        # single-image response.
+        meta["heatmap"] = ""
     return metas
 
 
@@ -300,24 +332,44 @@ def predict():
     except (UnidentifiedImageError, OSError):
         return jsonify(success=False, error="Cannot read the uploaded file as an image."), 400
 
+    # Apply the EXIF orientation so the image is analysed the way the browser
+    # shows it to the user. Without this a portrait phone photo is analysed
+    # rotated by 90 degrees, which changes the prediction and misaligns the
+    # Grad-CAM overlay.
+    img = apply_exif_orientation(img)
+
     # Image quality check (warnings only — never rejects a decodable image)
     quality_result = quality.check_image_quality(img)
 
-    try:
-        if active_model == "convnext_tiny":
-            result = convnext_predict_single(img)
-        else:
-            result = mobilenet_predict_single(img)
-    except Exception as exc:
-        log.error("Prediction error: %s", exc)
-        return jsonify(success=False, error=f"Prediction failed: {exc}"), 500
+    # Input-domain gate: refuse to emit a cancer verdict for images that are
+    # not dermoscopic skin lesions (ordinary photos such as classroom scenes).
+    # It runs before the prediction so no heatmap is generated for an image
+    # that is going to be refused anyway.
+    domain_result = domain.check_domain(img, second_opinion=mobilenet_cancer_probability)
+    if not domain_result["in_domain"]:
+        log.info("Input-domain gate rejected an out-of-domain image (score=%s)",
+                 domain_result["score"])
+        result = domain.not_analysable_result(domain_result)
+    else:
+        try:
+            if active_model == "convnext_tiny":
+                result = convnext_predict_single(img)
+            else:
+                result = mobilenet_predict_single(img)
+        except Exception as exc:
+            log.error("Prediction error: %s", exc)
+            return jsonify(success=False, error=f"Prediction failed: {exc}"), 500
+        result["analysable"] = True
+        result["domain_in_domain"] = True
+        result["domain_score"] = domain_result["score"]
 
     result["success"] = True
     result["quality_warnings"] = quality_result["warnings"]
     result["quality_metrics"] = quality_result["metrics"]
     result["quality_is_valid"] = quality_result["is_valid"]
-    log.info("Prediction: verdict=%s cancer_prob=%.4f risk=%s model=%s",
-             result["verdict"], result["cancer_probability"], result["risk_level"], active_model)
+    log.info("Prediction: verdict=%s cancer_prob=%s risk=%s model=%s",
+             result["verdict"], result["cancer_probability"],
+             result["risk_level"], active_model)
     return jsonify(result)
 
 
@@ -352,6 +404,9 @@ def predict_batch():
         try:
             img = Image.open(io.BytesIO(raw))
             img.load()
+            # Apply the EXIF orientation so the image is analysed the way the
+            # browser shows it to the user (see /predict).
+            img = apply_exif_orientation(img)
             images.append(img)
         except (UnidentifiedImageError, OSError):
             return jsonify(success=False, error=f"Cannot read {file.filename} as an image."), 400
@@ -376,6 +431,18 @@ def predict_batch():
         pred["quality_warnings"] = qr["warnings"]
         pred["quality_metrics"] = qr["metrics"]
         pred["quality_is_valid"] = qr["is_valid"]
+
+    # Input-domain gate: refuse to emit a cancer verdict for images that are
+    # not dermoscopic skin lesions (ordinary photos such as classroom scenes).
+    domain_results = domain.check_domains(images, second_opinion=mobilenet_cancer_probability)
+    for pred, dom in zip(results, domain_results):
+        pred["analysable"] = True
+        pred["domain_in_domain"] = dom["in_domain"]
+        pred["domain_score"] = dom["score"]
+        if not dom["in_domain"]:
+            log.info("Input-domain gate rejected an out-of-domain image (score=%s)",
+                     dom["score"])
+            pred.update(domain.not_analysable_result(dom))
 
     response = {
         "success": True,

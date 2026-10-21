@@ -1,0 +1,981 @@
+{
+  "project": "DermaAI",
+  "project_root": "C:\\Users\\Manjunath\\OneDrive\\Desktop\\MINI3\\skin-cancer-app-simple\\skin-cancer-app",
+  "audit_date": "2026-10-17",
+  "git_branch": "main",
+  "git_commit": "94b4af0",
+  "python_version": "3.13.3",
+  "flask_version": "3.1.3",
+  "pytorch_version": "2.11.0+cu128",
+  "tensorflow_version": "2.20.0",
+  "phase1_inventory": {
+    "notebooks_found": [
+      "research/notebooks/dermai_convnext_tiny_colab.ipynb"
+    ],
+    "paper_docx_found": null,
+    "paper_pdf_reference": "C:\\Users\\Manjunath\\OneDrive\\Desktop\\MINI3\\Research Paper.pdf (Le et al. 2020, arXiv:2009.05977v1 - reference paper, NOT the DermaAI project paper)",
+    "ham10000_available": "D:\\User\\Downloads\\archive (10015 images, 7470 unique lesions)",
+    "split_manifests": null,
+    "split_code": [
+      "dermai_exp/data.py",
+      "scripts/training/train_convnext_tiny.py",
+      "tools/verify_models.py"
+    ],
+    "model_artifacts": {
+      "mobilenetv2": "model/skin_cancer_mobilenetv2.h5 (21.83 MB)",
+      "convnext_tiny": "results/convnext_tiny/convnext_tiny_best.pt",
+      "convnext_checkpoint": "results/convnext_tiny/checkpoints/stage2_epoch13.pt"
+    },
+    "prediction_artifacts": {
+      "convnext_tiny_test": [
+        "results/convnext_tiny/test_proba.npy (1505)",
+        "results/convnext_tiny/test_true.npy (1505)"
+      ],
+      "convnext_tiny_val": [
+        "results/convnext_tiny/val_proba.npy (1500)",
+        "results/convnext_tiny/val_true.npy (1500)"
+      ],
+      "mobilenetv2_full_predictions": null,
+      "mobilenetv2_single_predictions": 6
+    }
+  },
+  "phase2_lesion_split_verification": {
+    "split_strategy": "lesion-level stratified 70/15/15",
+    "seed": 42,
+    "grouping_key": "lesion_id",
+    "grouping_based_on_lesion_id": true,
+    "same_split_for_all_models": true,
+    "reproduces_notebook_exactly": true,
+    "total_images": 10015,
+    "unique_lesions": 7470,
+    "duplicate_image_ids": 0,
+    "duplicate_image_id_lesion_pairs": 0,
+    "splits": {
+      "train": {
+        "images": 7010,
+        "lesions": 5229,
+        "class_counts": {
+          "Non-Cancer": 5641,
+          "Cancer": 1369
+        },
+        "matches_reference": true
+      },
+      "val": {
+        "images": 1500,
+        "lesions": 1120,
+        "class_counts": {
+          "Non-Cancer": 1203,
+          "Cancer": 297
+        },
+        "matches_reference": true
+      },
+      "test": {
+        "images": 1505,
+        "lesions": 1121,
+        "class_counts": {
+          "Non-Cancer": 1217,
+          "Cancer": 288
+        },
+        "matches_reference": true
+      }
+    },
+    "overlap_checks": {
+      "train_lesions_intersect_validation_lesions": 0,
+      "train_lesions_intersect_test_lesions": 0,
+      "validation_lesions_intersect_test_lesions": 0,
+      "total_lesion_overlap": 0,
+      "zero_lesion_overlap": true
+    },
+    "patient_level_separation": "NOT assessable - no patient identifiers in HAM10000 artifacts",
+    "deployed_model_same_split": true,
+    "label_mapping": {
+      "1": "Cancer (dx in mel, bcc, akiec)",
+      "0": "Non-Cancer (dx in nv, bkl, vasc, df)"
+    },
+    "label_mapping_matches_paper": true,
+    "status": "VERIFIED"
+  },
+  "phase3_metric_verification": {
+    "positive_class": 1,
+    "positive_class_name": "Cancer (dx in mel, bcc, akiec)",
+    "threshold_convnext": 0.5249999999999998,
+    "threshold_mobilenet_config": 0.22,
+    "threshold_mobilenet_card_claim": 0.5,
+    "convnext_tiny": {
+      "test_metrics_source": "results/convnext_tiny/test_proba.npy + test_true.npy",
+      "test_metrics_independently_rederived": true,
+      "test_threshold": 0.5249999999999998,
+      "test_n": 1505,
+      "test_accuracy": 0.8604651162790697,
+      "test_precision": 0.6392857142857142,
+      "test_recall_sensitivity": 0.6215277777777778,
+      "test_specificity": 0.9170090386195563,
+      "test_f1": 0.6302816901408451,
+      "test_roc_auc": 0.8924324386012965,
+      "test_confusion": {
+        "tn": 1116,
+        "fp": 101,
+        "fn": 109,
+        "tp": 179
+      },
+      "test_matches_metrics_json": true,
+      "val_metrics_source": "results/convnext_tiny/val_proba.npy + val_true.npy",
+      "val_metrics_independently_rederived": true,
+      "val_threshold": 0.5249999999999998,
+      "val_n": 1500,
+      "val_accuracy": 0.8853333333333333,
+      "val_precision": 0.7289377289377289,
+      "val_recall_sensitivity": 0.67003367003367,
+      "val_specificity": 0.9384871155444722,
+      "val_f1": 0.6982456140350877,
+      "val_roc_auc": 0.9133185554631937,
+      "val_confusion": {
+        "tn": 1129,
+        "fp": 74,
+        "fn": 98,
+        "tp": 199
+      },
+      "val_matches_metrics_json": true,
+      "status": "VERIFIED"
+    },
+    "mobilenetv2": {
+      "test_metrics_source": "model_card.json (NOT independently re-derived - no .npy files)",
+      "test_metrics_independently_rederived": false,
+      "test_threshold": 0.22000000000000003,
+      "test_n": 1505,
+      "test_accuracy": 0.7980066445182724,
+      "test_precision": 0.481981981981982,
+      "test_recall_sensitivity": 0.7430555555555556,
+      "test_f1": 0.5846994535519126,
+      "test_roc_auc": 0.8623664749383729,
+      "test_confusion": {
+        "tn": 987,
+        "fp": 230,
+        "fn": 74,
+        "tp": 214
+      },
+      "test_at_0.50": {
+        "threshold": 0.5,
+        "accuracy": 0.8491694352159468,
+        "precision": 0.6380090497737556,
+        "recall": 0.4895833333333333,
+        "f1": 0.5540275049115914,
+        "roc_auc": 0.8623664749383729,
+        "confusion": {
+          "tn": 1137,
+          "fp": 80,
+          "fn": 147,
+          "tp": 141
+        }
+      },
+      "val_metrics_source": "model_card.json (NOT independently re-derived)",
+      "val_threshold": 0.22000000000000003,
+      "val_n": 1500,
+      "val_accuracy": 0.832,
+      "val_precision": 0.5544794188861986,
+      "val_recall_sensitivity": 0.7710437710437711,
+      "val_f1": 0.6450704225352113,
+      "val_roc_auc": 0.8946712903487634,
+      "val_confusion": {
+        "tn": 1019,
+        "fp": 184,
+        "fn": 68,
+        "tp": 229
+      },
+      "single_image_predictions_stored": 6,
+      "single_image_predictions_sufficient_for_full_test": false,
+      "status": "SUPPORTED_BY_ARTIFACT_NOT_REDERIVED"
+    },
+    "efficientnetb2": {
+      "models_available_at": "D:\\User\\Downloads\\skin_cancer_efficientnetb2_final.keras, skin_cancer_efficientnetb2_accuracy.keras",
+      "models_in_project": false,
+      "prediction_artifacts": null,
+      "metrics_available": null,
+      "status": "NOT_VERIFIED - models exist outside project, no prediction files in project"
+    },
+    "deployed_mobilenetv2_provenance": "model_card.json reports test metrics but no full prediction files exist to independently verify",
+    "deployed_convnext_provenance": "metrics.json + test_proba.npy/test_true.npy - independently verified"
+  },
+  "phase4_technical_inconsistencies": {
+    "threshold_discrepancy": {
+      "config_py_mobilenet_threshold": 0.22,
+      "config_py_convnext_threshold": 0.525,
+      "model_card_json_claims_app_uses": 0.5,
+      "metrics_json_claims_app_uses": 0.5,
+      "app_py_actual_threshold_source": "config.py (MOBILENET_THRESHOLD=0.22, CONVNEXT_THRESHOLD=0.525)",
+      "discrepancy_found": true,
+      "authoritative_values": {
+        "mobilenetv2": 0.22,
+        "convnext_tiny": 0.525
+      },
+      "json_artifacts_outdated": true
+    },
+    "risk_bands_vs_classification_thresholds": {
+      "config_risk_high": 0.6,
+      "config_risk_medium": 0.3,
+      "mobilenetv2_classification_threshold": 0.22,
+      "convnext_classification_threshold": 0.525,
+      "distinction": "Risk bands (0.3/0.6) are probability-based severity labels; classification thresholds (0.22/0.525) determine cancer/non-cancer verdict. They serve different purposes and are not in conflict.",
+      "action": "Document only - no code change required"
+    },
+    "efficientnetb2_class_weights_focal_loss": {
+      "engine_py_loss": "F.binary_cross_entropy_with_logits with optional pos_weight (class weights)",
+      "focal_loss_implemented_in_dermai_exp": false,
+      "plan_c_json_efficientnetb2": false,
+      "models_py_efficientnetb2": false,
+      "efficientnetb2_models_location": "D:\\User\\Downloads (from skin_cancer1.ipynb notebook, not dermai_exp framework)",
+      "class_weights_values": {
+        "c01_aux7": 1.0,
+        "c02_pw4": 4.0935,
+        "c03_heavy_mixup": 1.0
+      },
+      "focal_loss_used": false,
+      "status": "NOT_VERIFIED - no focal loss in project training code; EfficientNetB2 models exist only outside project"
+    },
+    "convnext_aux_loss_weight_lambda": {
+      "source": "results/experiments/plan_c.json c01_aux7 config",
+      "aux_weight_lambda": 0.3,
+      "confirmed": true,
+      "note": "This is an experiment config (c01_aux7), not necessarily the production model config"
+    },
+    "convnext_tiny_tta": {
+      "eval_tta_function": "dermai_exp/aug.py EvalTTA - 8 dihedral views (id, h, v, hv, r90, r90h, r90v, r90hv)",
+      "production_eval_tta": 1,
+      "experiment_eval_tta": 8,
+      "validation_same_as_test": "Engine predict() uses tta parameter; production metrics.json used tta=1",
+      "status": "Production eval used tta=1; experiment configs used tta=8"
+    },
+    "convnext_tiny_parameter_count": {
+      "verified_from_architecture": true,
+      "total_parameters": 27820897,
+      "total_parameters_m": 27.82,
+      "trainable_parameters": 27820897,
+      "architecture": "ConvNeXt-Tiny (torchvision IMAGENET1K_V1) + GAP + Dropout(0.30) + Linear(768,1)"
+    },
+    "deployed_mobilenetv2_metrics_provenance": {
+      "source": "model_card.json",
+      "independently_verifiable": false,
+      "reason": "No test_proba.npy / test_true.npy files for MobileNetV2 in project",
+      "status": "SUPPORTED_BY_ARTIFACT_ONLY"
+    },
+    "equations_and_symbols": {
+      "reference_paper_eq1": "FL(pt) = -alpha_t * (1 - pt)^gamma * log(pt)",
+      "symbols": {
+        "p_t": "predicted probability of ground-truth class",
+        "alpha_t": "weighting factor",
+        "gamma": "focusing parameter"
+      },
+      "dermaai_project_equations": null,
+      "symbol_conflicts": "None found in project code artifacts"
+    },
+    "test_suite_counts": {
+      "pytest_full_suite": {
+        "passed": 56,
+        "warnings": 50,
+        "failed": 0,
+        "errored": 0
+      },
+      "pytest_test_regression_only": {
+        "passed": 38,
+        "warnings": 48,
+        "failed": 0,
+        "errored": 0
+      },
+      "pytest_test_quality_only": {
+        "passed": 18,
+        "warnings": 3,
+        "failed": 0,
+        "errored": 0
+      },
+      "standalone_regression": {
+        "passed": 22,
+        "failed": 0,
+        "errored": 0,
+        "warnings": 0
+      },
+      "standalone_convnext": {
+        "passed": 11,
+        "failed": 0,
+        "errored": 0
+      },
+      "standalone_mobilenetv2": {
+        "passed": 11,
+        "failed": 0,
+        "errored": 0
+      },
+      "note": "Suites are NOT additive: pytest full (56) = test_quality (18) + test_regression (38). Standalone (22) is a separate runner."
+    },
+    "python_flask_versions": {
+      "requirements_txt": "flask==3.1.3, tensorflow==2.20.0, torch>=2.5.0, torchvision>=0.20.0, numpy==2.4.6, pillow==11.1.0, opencv-python-headless==4.11.0.86, scipy==1.15.3",
+      "runtime_verified": "Python 3.13.3, Flask 3.1.3, PyTorch 2.11.0+cu128, TensorFlow 2.20.0, pytest 9.1.1",
+      "versions_match_requirements": true
+    },
+    "github_repository_url": "https://github.com/manjunath-2007/DermaAI-AI-Powered-Skin-Cancer-Classification-Using-MobileNetV2.git",
+    "repo_url_verified": false,
+    "note": "URL found in reports but repository was not accessed to verify existence"
+  },
+  "phase5_statistical_validity": {
+    "test_set_inspected_repeatedly": "Disclosed in paper - acknowledged as limitation",
+    "bootstrap_intervals_treat_images_independently": "Disclosed in paper - acknowledged as limitation",
+    "paired_comparisons_possible": true,
+    "per_image_predictions_available": "ConvNeXt-Tiny only (test_proba.npy/test_true.npy)",
+    "paired_bootstrap_possible": "For ConvNeXt-Tiny vs other models only if their predictions exist",
+    "lesion_clustering": "Possible using lesion_id from metadata",
+    "formal_significance_claimed": false,
+    "p_values_fabricated": false,
+    "confidence_intervals_fabricated": false,
+    "status": "Limitations disclosed; no formal significance testing performed"
+  },
+  "phase6_references": {
+    "reference_paper": "Le et al. 2020, arXiv:2009.05977v1",
+    "reference_exists": true,
+    "bibliographic_details_verified": true,
+    "source_supports_claims": "Partially - reference paper uses ResNet50/VGG16/MobileNet/EfficientNetB1, not ConvNeXt-Tiny/EfficientNetB2",
+    "doi_available": false,
+    "plagiarism_score": "NOT claimed - no similarity-checking service report available",
+    "status": "PARTIALLY_VERIFIED"
+  },
+  "phase7_paper_changes": {
+    "docx_exists": false,
+    "docx_path": null,
+    "action": "No DermaAI research paper DOCX found in project or MINI3 directory. Cannot edit without source document.",
+    "reference_pdf_only": "C:\\Users\\Manjunath\\OneDrive\\Desktop\\MINI3\\Research Paper.pdf (external reference paper by Le et al. 2020)"
+  },
+  "overall_status": {
+    "lesion_level_splitting": "VERIFIED",
+    "zero_lesion_overlap": "VERIFIED",
+    "notebook_model_metrics": "VERIFIED - recalculated from the stored .npy prediction arrays; reproduces metrics.json exactly (epoch-7 checkpoint)",
+    "deployed_model_metrics": "VERIFIED - the application now serves results/convnext_tiny/convnext_tiny_best.pt (stage2 epoch 7), which is the checkpoint behind every published ConvNeXt metric and the 0.525 threshold. Deployed model and reported metrics now describe the same weights. See phase10_checkpoint_mismatch_fix_2026_10_20.",
+    "mobilenetv2_metrics": "SUPPORTED_BY_ARTIFACT_NOT_REDERIVED",
+    "threshold_configuration": "DISCREPANCY_FOUND - config.py (0.22 / 0.525) is authoritative; the app_py_current_threshold=0.5 fields in model_card.json / metrics.json / threshold.json are stale metadata. Runtime unchanged.",
+    "risk_band_interpretation": "NO CONFLICT - RISK_MEDIUM/RISK_HIGH (0.3/0.6) are severity labels; the classification thresholds (0.22/0.525) decide the verdict.",
+    "convnext_checkpoint_loading": "RESOLVED AND FIXED (2026-10-20) - config.CONVNEXT_CKPT now points at results/convnext_tiny/convnext_tiny_best.pt (epoch 7); config.CONVNEXT_BEST is the fallback results/convnext_tiny/checkpoints/stage2_epoch13.pt. Verified by loading through inference.load_convnext_model(): the live state-dict SHA-256 matches epoch 7 and not epoch 13.",
+    "convnext_parameter_count": "VERIFIED - 27820897 (27.82 M), confirmed on the live loaded model",
+    "efficientnetb2": "NOT VERIFIED - .keras models exist only at D:\\User\\Downloads, outside the project; no EfficientNetB2 artifact, metric or prediction file exists in the project, and no focal loss is implemented in dermai_exp/",
+    "references": "PARTIALLY VERIFIED - the Le et al. 2020 reference is established but does not cover ConvNeXt-Tiny/EfficientNetB2; the DermaAI reference list could not be checked because the paper source does not exist",
+    "external_validation": "NOT_ESTABLISHED - test-images/* are external photographs proven not to be HAM10000 images",
+    "confidence_calibration": "NOT_APPLIED - MobileNetV2 temperature 1.0; ConvNeXt raw sigmoid",
+    "image_quality_thresholds": "HEURISTIC - no human-labelled calibration dataset found",
+    "gradcam_localization": "NOT_ESTABLISHED - MobileNetV2 corner-activation defect unresolved and actively warned about by the test suite",
+    "statistical_significance": "NOT_PERFORMED - no p-values, no confidence intervals, no lesion-clustered resampling; none claimed",
+    "patient_level_separation": "NOT_ASSESSABLE - HAM10000 carries no patient identifier",
+    "research_paper_docx": "BLOCKED - no DermaAI paper source exists; nothing fabricated",
+    "tests": "pytest: 56 passed, 36 warnings in 51.19 s; standalone regression: 22 passed, 0 failed, 0 errored. Both re-run after the checkpoint fix on 2026-10-20 and re-verified green. Both must be run from the project root.",
+    "files_modified": "config.py (checkpoint paths only), README.md, PROJECT_AUDIT.md, plus the audit reports and this JSON. No weights, checkpoints, prediction arrays, dataset files, notebooks, thresholds or inference/app logic were modified.",
+    "git_state_at_verification": "branch main, commit b38ed89; 3 tracked files modified (config.py, README.md, PROJECT_AUDIT.md) and 17 untracked audit artifacts; no commit, no push, no deployment performed.",
+    "end_to_end_application_test": "PASS - 125/125 real photographs served, 8/8 corrupted uploads and 11/11 invalid file types rejected with 400, batch and error paths correct",
+    "frontend_and_pdf_export": "PASS - 25/25 headless-browser checks, including the Not-analysable state and both PDF variants (LIKELY AFFECTED and NOT ANALYSABLE)",
+    "exif_orientation": "FIXED AND VERIFIED 2026-10-20 - the EXIF orientation is applied on the server; a rotated-and-tagged upload now returns the same probability and verdict as the upright picture (ISSUE-22)",
+    "gradcam_thread_safety": "FIXED AND VERIFIED 2026-10-20 - the heatmap gradient is taken with torch.autograd.grad, bit-identical output, no shared state (ISSUE-22)",
+    "domain_gate_false_reject": "OPEN 2026-10-20 - two genuine lesion photographs are refused (distance 0.858 / 0.877 vs the 0.82 cut-off); thresholds deliberately unchanged (ISSUE-20)",
+    "stale_dev_server_on_port_5000": "RESOLVED 2026-10-20 - a server started on 2026-10-16 was terminated; the port now has a single listener (ISSUE-21)"
+  },
+  "phase8_fresh_reverification_2026_10_20": {
+    "run_date": "2026-10-20",
+    "scope": "Re-execution of the verification tooling and a full test run in the current phase. No training, no retraining, no modification of weights, checkpoints, prediction arrays or dataset files.",
+    "environment": {
+      "os": "Windows",
+      "python": "3.13.3",
+      "venv": "skin-cancer-app-simple/venv",
+      "flask": "3.1.3",
+      "pytorch": "2.11.0+cu128",
+      "tensorflow": "2.20.0",
+      "pytest": "9.1.1",
+      "gpu_used": false,
+      "note": "Verification ran on CPU; the original training ran on an NVIDIA GeForce RTX 2050."
+    },
+    "commands_executed": [
+      "git status / log --oneline -5 / branch -vv",
+      "python scripts/verify_lesion_split.py",
+      "python scripts/verify_reported_metrics.py",
+      "python -m pytest tests -q",
+      "python tests/test_regression.py",
+      "python <convnext checkpoint resolution script>",
+      "python <dual-checkpoint evaluation script>"
+    ],
+    "lesion_split_verification": {
+      "status": "VERIFIED",
+      "script": "scripts/verify_lesion_split.py",
+      "exit_code": 0,
+      "metadata": "D:\\User\\Downloads\\archive\\HAM10000_metadata.csv",
+      "images": 10015,
+      "unique_lesions": 7470,
+      "splits": {
+        "train": {
+          "images": 7010,
+          "lesions": 5229
+        },
+        "val": {
+          "images": 1500,
+          "lesions": 1120
+        },
+        "test": {
+          "images": 1505,
+          "lesions": 1121
+        }
+      },
+      "lesion_overlap": {
+        "train_val": 0,
+        "train_test": 0,
+        "val_test": 0
+      },
+      "duplicate_image_ids": 0,
+      "duplicate_image_id_lesion_pairs": 0,
+      "scope_limit": "Proves the split logic reproduces from the committed code with seed 42. Not proof that every historical training run consumed this exact split."
+    },
+    "convnext_metric_reverification": {
+      "status": "VERIFIED",
+      "script": "scripts/verify_reported_metrics.py",
+      "exit_code": 0,
+      "source": "results/convnext_tiny/{test_proba.npy,test_true.npy,val_proba.npy,val_true.npy}",
+      "threshold": 0.5249999999999998,
+      "test": {
+        "n": 1505,
+        "accuracy": 0.8604651162790697,
+        "precision": 0.6392857142857142,
+        "recall_sensitivity": 0.6215277777777778,
+        "specificity": 0.9170090386195563,
+        "f1": 0.6302816901408451,
+        "roc_auc": 0.8924324386012965,
+        "confusion": {
+          "tn": 1116,
+          "fp": 101,
+          "fn": 109,
+          "tp": 179
+        }
+      },
+      "val": {
+        "n": 1500,
+        "accuracy": 0.8853333333333333,
+        "precision": 0.7289377289377289,
+        "recall_sensitivity": 0.67003367003367,
+        "specificity": 0.9384871155444722,
+        "f1": 0.6982456140350877,
+        "roc_auc": 0.9133185554631937,
+        "confusion": {
+          "tn": 1129,
+          "fp": 74,
+          "fn": 98,
+          "tp": 199
+        }
+      },
+      "matches_metrics_json": true,
+      "checkpoint_described_by_these_arrays": "results/convnext_tiny/convnext_tiny_best.pt (stage2, epoch 7)"
+    },
+    "mobilenetv2_metrics": {
+      "status": "SUPPORTED_BY_ARTIFACT_NOT_REDERIVED",
+      "reason": "No full MobileNetV2 prediction array exists in the project. Only 6 single_image_predictions in model/model_card.json.",
+      "single_image_predictions_stored": 6,
+      "note": "Stored predictions show MobileNetV2 scoring cancer-melanoma.jpg at 0.172773 (not_affected)."
+    },
+    "pytest_full_suite": {
+      "command": "python -m pytest tests -q",
+      "result": "56 passed, 36 warnings in 52.22 s",
+      "passed": 56,
+      "warnings": 36,
+      "failed": 0,
+      "errored": 0,
+      "breakdown": {
+        "tests/test_quality.py": "18 passed, 3 warnings",
+        "tests/test_regression.py": "38 passed, 33 warnings"
+      },
+      "cwd_requirement": "MUST be run with the working directory set to the project root. Run from any other directory the suite yields 22 passed / 34 errors because tests/test_regression.py resolves fixtures via the relative path 'test-images/...'."
+    },
+    "standalone_regression": {
+      "command": "python tests/test_regression.py",
+      "result": "22 passed, 0 failed, 0 errored",
+      "convnext_tiny": "11 passed",
+      "mobilenetv2": "11 passed",
+      "cwd_requirement": "Same as the pytest suite - must run from the project root."
+    },
+    "warning_inventory": {
+      "gradcam_full_backward_hook": 19,
+      "keras_input_structure": 12,
+      "heatmap_localization_may_be_spurious": 1,
+      "interpretation": "The Grad-CAM full-backward-hook warning is a real implementation smell. The Keras input-structure warning is a fragile but currently tolerated call pattern. The localization warning is the known MobileNetV2 corner-activation defect, actively surfaced by the suite."
+    },
+    "threshold_metadata_discrepancy": {
+      "status": "DISCREPANCY_FOUND",
+      "authoritative_source": "config.py",
+      "runtime_values": {
+        "mobilenetv2": 0.22,
+        "convnext_tiny": 0.525
+      },
+      "stale_metadata_fields": {
+        "model/model_card.json:29 app_py_current_threshold": 0.5,
+        "results/convnext_tiny/metrics.json:95 app_py_current_threshold": 0.5,
+        "results/convnext_tiny/metrics.json:96 app_py_changed": false,
+        "results/convnext_tiny/threshold.json app_py_remains": 0.5
+      },
+      "runtime_changed": false,
+      "note": "Outdated metadata only. app.py/inference.py read config.py."
+    },
+    "research_paper_docx": {
+      "status": "BLOCKED",
+      "docx_found": false,
+      "action": "DERMAI_RESEARCH_PAPER_FINAL.docx deliberately NOT created. No DermaAI paper source exists in the project, MINI3, research/ or backup folders.",
+      "pdfs_present_in_MINI3": {
+        "Research Paper.pdf": "Le et al. 2020 arXiv:2009.05977v1 - REFERENCE paper, not the DermaAI paper. Not renamed, not edited.",
+        "research implementation.pdf": "supporting material",
+        "Future Work.pdf": "supporting material",
+        "Layman's Language.pdf": "supporting material"
+      }
+    },
+    "audit_json_protection": {
+      "sha256_before": "E7FE79AEDAE8CAFC41B28D737C234265D54EABA503774FEF0E43BCD995DEC518",
+      "sha256_after": "E7FE79AEDAE8CAFC41B28D737C234265D54EABA503774FEF0E43BCD995DEC518",
+      "unchanged": true,
+      "note": "Both verifier scripts were run; neither modified the comprehensive audit JSON."
+    },
+    "scripts_fixed_in_this_cycle": [
+      "scripts/verify_reported_metrics.py: output path changed from DERMAI_VERIFICATION_RESULTS.json to scripts/metrics_verification_results.json (previously the Phase-3 verifier destroyed the comprehensive audit report); required integrity failures (missing or length-mismatched ConvNeXt .npy pairs) now exit 1. Backup: scripts/verify_reported_metrics.py.bak_20261020"
+    ]
+  },
+  "phase9_convnext_checkpoint_deployment_investigation": {
+    "status": "RESOLVED",
+    "question": "Which ConvNeXt checkpoint does the application actually load, and does it match the checkpoint behind the published metrics?",
+    "deployed_checkpoint": {
+      "path": "results/convnext_tiny/checkpoints/stage2_epoch13.pt",
+      "bytes": 324158987,
+      "state_dict_key": "model",
+      "branch_taken_in_inference_py": "elif 'model' in checkpoint (inference.py:153-158)",
+      "stage": "stage2",
+      "epoch": 13,
+      "own_val_roc_auc_measured": 0.908626301810009,
+      "own_val_roc_auc_in_history_csv": 0.9086430948442585,
+      "embedded_best_auc_field": 0.9133311502388809,
+      "embedded_field_meaning": "Running best across the training run (achieved at epoch 7), NOT this checkpoint's own score. The startup log therefore prints a misleading val_auc=0.9133 for the epoch-13 model."
+    },
+    "fallback_checkpoint": {
+      "path": "results/convnext_tiny/convnext_tiny_best.pt",
+      "bytes": 111354291,
+      "state_dict_key": "model_state_dict",
+      "stage": "stage2",
+      "epoch": 7,
+      "val_auc": 0.9133311502388809,
+      "trained_at": "2026-10-04T00:56:44.412477",
+      "used_by_application": false,
+      "reason": "config.CONVNEXT_CKPT (stage2_epoch13.pt) exists, so the fallback in inference.py:135-137 is never taken."
+    },
+    "checkpoint_used_by_published_evaluation": {
+      "path": "results/convnext_tiny/convnext_tiny_best.pt",
+      "evidence": [
+        "scripts/training/train_convnext_tiny.py:1112-1116 (--eval-only -> load_best() -> report())",
+        "scripts/training/train_convnext_tiny.py:756-766 (load_best loads convnext_tiny_best.pt)",
+        "results/convnext_tiny/evaluation_log.txt:60-61",
+        "results/convnext_tiny/evaluation_log.txt:137"
+      ]
+    },
+    "weights_are_different": {
+      "state_dict_sha256_prefix": {
+        "convnext_tiny_best.pt": "1af4d17eee76911a1582fbe4d83cf419",
+        "stage2_epoch13.pt": "fb57b6d6be69dded9c870ecffe5d7449"
+      },
+      "per_tensor_equality": false,
+      "live_application_model_matches_stage2_epoch13": true,
+      "live_application_model_matches_convnext_tiny_best": false
+    },
+    "measured_comparison_at_threshold_0.525": {
+      "method": "Both checkpoints evaluated on the identical frozen val/test split, rebuilt with the project's own make_split() (seed 42), using the project's own 224x224 decoded image cache and the application's raw-RGB [0,255] input contract.",
+      "pipeline_validation": {
+        "epoch7_max_abs_diff_vs_stored_val_proba": 0.00551295280456543,
+        "epoch7_max_abs_diff_vs_stored_test_proba": 0.01068025827407837,
+        "epoch7_label_order_identical_to_stored_arrays": true,
+        "epoch13_max_abs_diff_vs_stored_val_proba": 0.5026076585054398,
+        "epoch13_max_abs_diff_vs_stored_test_proba": 0.5586075335741043,
+        "interpretation": "The harness faithfully reproduces the stored epoch-7 evaluation arrays (residual = fp16-GPU vs fp32-CPU arithmetic) and does not reproduce them for epoch 13, confirming a different model."
+      },
+      "test": {
+        "published_epoch7": {
+          "accuracy": 0.8604651162790697,
+          "precision": 0.6392857142857142,
+          "recall": 0.6215277777777778,
+          "specificity": 0.9170090386195563,
+          "f1": 0.6302816901408451,
+          "roc_auc": 0.8924324386012965
+        },
+        "deployed_epoch13": {
+          "accuracy": 0.8644518272425249,
+          "precision": 0.6764705882352942,
+          "recall": 0.5590277777777778,
+          "specificity": 0.9367296631059984,
+          "f1": 0.6121673003802282,
+          "roc_auc": 0.8813424404272804
+        },
+        "delta": {
+          "accuracy": 0.003986710963455153,
+          "precision": 0.03718487394957992,
+          "recall": -0.0625,
+          "specificity": 0.019720624486442073,
+          "f1": -0.018114389760616967,
+          "roc_auc": -0.011089998174016125
+        }
+      },
+      "val": {
+        "published_epoch7": {
+          "accuracy": 0.8853333333333333,
+          "f1": 0.6982456140350877,
+          "roc_auc": 0.9133185554631937
+        },
+        "deployed_epoch13": {
+          "accuracy": 0.8833333333333333,
+          "f1": 0.6716697936210131,
+          "roc_auc": 0.908626301810009
+        },
+        "delta": {
+          "accuracy": -0.0020000000000000018,
+          "f1": -0.02657582041407458,
+          "roc_auc": -0.004692253653184708
+        }
+      }
+    },
+    "finding": "The deployed application serves stage2 epoch-13 weights, while every published ConvNeXt metric describes the stage2 epoch-7 weights. The published metrics therefore do not describe the deployed model. The clinically relevant gap is -6.25 percentage points of cancer sensitivity at the deployed threshold (0.621528 -> 0.559028), while overall accuracy moves by only +0.4 points.",
+    "root_cause": "config.CONVNEXT_CKPT points at the last epoch rather than at the best checkpoint; early stopping had already passed the best epoch (7) by epoch 13.",
+    "resolution_options": [
+      "A (recommended): point CONVNEXT_CKPT at results/convnext_tiny/convnext_tiny_best.pt so the deployed model, the 0.525 threshold and the published metrics all agree. No retraining.",
+      "B: keep stage2_epoch13.pt and re-derive the threshold and all reported metrics against it.",
+      "C: re-train and export the best checkpoint as the deployment artifact."
+    ],
+    "applied_in_this_audit": false,
+    "reason_not_applied": "Changing the runtime checkpoint alters application behaviour and is a product decision, not an audit action.",
+    "retraining_required": false,
+    "evidence_file": "scripts/convnext_checkpoint_verification.json"
+  },
+  "audit_date_latest": "2026-10-20",
+  "phase8_phase9_added": "2026-10-20",
+  "phases_preserved": [
+    "project",
+    "project_root",
+    "audit_date",
+    "git_branch",
+    "git_commit",
+    "python_version",
+    "flask_version",
+    "pytorch_version",
+    "tensorflow_version",
+    "phase1_inventory",
+    "phase2_lesion_split_verification",
+    "phase3_metric_verification",
+    "phase4_technical_inconsistencies",
+    "phase5_statistical_validity",
+    "phase6_references",
+    "phase7_paper_changes",
+    "overall_status"
+  ],
+  "phase10_checkpoint_mismatch_fix_2026_10_20": {
+    "status": "APPLIED_AND_VERIFIED",
+    "issue": "ISSUE-01 - the deployed application served stage2_epoch13.pt while every published ConvNeXt metric described stage2_epoch07.pt (convnext_tiny_best.pt).",
+    "approved_option": "Option A - make convnext_tiny_best.pt the primary checkpoint and stage2_epoch13.pt the fallback. Approved by the user on 2026-10-20.",
+    "changes_applied": [
+      {
+        "file": "config.py",
+        "lines": "21-29 (comments + two path assignments)",
+        "change": "CONVNEXT_CKPT = RESULTS_DIR/convnext_tiny_best.pt   (was checkpoints/stage2_epoch13.pt)\nCONVNEXT_BEST = RESULTS_DIR/checkpoints/stage2_epoch13.pt   (was convnext_tiny_best.pt)",
+        "rationale": "The primary checkpoint must be the weights that produced the published metrics and the 0.525 threshold; the fallback preserves the previous checkpoint as a working alternative."
+      },
+      {
+        "file": "README.md",
+        "lines": "56-57, 161, 176-179",
+        "change": "Directory tree, model-information table, checkpoint-requirements table and the load-order sentence now describe convnext_tiny_best.pt as primary and stage2_epoch13.pt as fallback."
+      },
+      {
+        "file": "PROJECT_AUDIT.md",
+        "lines": "49-50, 137-138, 349-350, 404-405",
+        "change": "Directory tree, critical-files table, 'must not be moved' risk table and the critical-path dependency block updated to match config.py."
+      }
+    ],
+    "not_changed": {
+      "threshold": "CONVNEXT_THRESHOLD remains 0.525 (it was selected on epoch-7 validation predictions, so it is now the correct threshold for the deployed model)",
+      "MOBILENET_THRESHOLD": 0.22,
+      "RISK_MEDIUM / RISK_HIGH": "0.3 / 0.6",
+      "model_weights": "No checkpoint, weight file or prediction array was modified. SHA-256 of convnext_tiny_best.pt, stage2_epoch12.pt, stage2_epoch13.pt, test_proba.npy, test_true.npy, val_proba.npy, val_true.npy and skin_cancer_mobilenetv2.h5 are unchanged and their mtimes are the original 2026-10-04 / 2026-09-28 timestamps.",
+      "inference_py": "Not modified - the resolution order in inference.py:134-142 already prefers the primary and falls back correctly.",
+      "app_py": "Not modified."
+    },
+    "backups_taken_before_editing": [
+      "config.py.bak_20261020",
+      "README.md.bak_20261020",
+      "PROJECT_AUDIT.md.bak_20261020",
+      "DERMAI_VERIFICATION_RESULTS.json.bak_20261020_pre_phase10"
+    ],
+    "verification_after_the_fix": {
+      "live_load_path": "inference.load_convnext_model() (no injection, no monkey-patching)",
+      "startup_log": "Loaded checkpoint: val_auc=0.9133, stage=stage2, epoch=7",
+      "live_state_dict_sha256_prefix": "1af4d17eee76911a1582fbe4d83cf419",
+      "matches_convnext_tiny_best_pt": true,
+      "matches_stage2_epoch13_pt": false,
+      "parameters": 27820897,
+      "checkpoint_metadata_as_seen_by_app": {
+        "file": "convnext_tiny_best.pt",
+        "stage": "stage2",
+        "epoch": 7,
+        "val_auc": 0.9133311502388809,
+        "trained_at": "2026-10-04T00:56:44.412477"
+      },
+      "get_health": "200 - status ok, threshold 0.525, params_m 27.82, model_loaded true",
+      "get_predict_melanoma": "200 - cancer_probability 0.6874, verdict affected, risk high, heatmap 118408 bytes",
+      "post_predict_batch_2_images": "200 - 0.6874 (affected) and 0.0653 (not_affected); both match the independently measured epoch-7 predictions",
+      "post_predict_invalid_extension": "400 (expected)",
+      "pytest_full_suite": "56 passed, 36 warnings in 51.19 s (exit 0)",
+      "standalone_regression": "22 passed, 0 failed, 0 errored (exit 0) - convnext_tiny 11, mobilenetv2 11",
+      "verify_lesion_split": "exit 0 - STATUS PASSED",
+      "verify_reported_metrics": "exit 0 - ConvNeXt test and val metrics re-derived",
+      "audit_json_protected_during_verifier_runs": true
+    },
+    "consequence": "The deployed application and every published ConvNeXt-Tiny metric now describe the same weights. No published number, threshold or prediction array needed to change. The previously measured impact of the swap on the frozen test split was 50 of 1505 verdicts (3.32%); fp16-vs-fp32 arithmetic alone changed 0 verdicts, so the effect is the model change and not numeric precision.",
+    "residual_items": [
+      "ISSUE-02 remains open for the FALLBACK path: inference.py:157 logs best_auc for a 'model'-style checkpoint, which is the run's running best rather than that checkpoint's own score. The primary path is unaffected because convnext_tiny_best.pt stores 'val_auc'.",
+      "A fallback load still serves weights that are not the ones behind the published metrics, and nothing in the startup log makes that visible. Optional hardening (log the resolved filename) was offered and not approved in this phase."
+    ],
+    "git_state": "3 tracked files modified (config.py, README.md, PROJECT_AUDIT.md) and 17 untracked audit artifacts. No commit, no push, no force-push, no history rewrite, no deployment."
+  },
+  "phase10_added": "2026-10-20",
+  "phase11_end_to_end_test_exif_gradcam_2026_10_20": {
+    "status": "APPLIED_AND_VERIFIED",
+    "scope": "Step 1 - end-to-end application test with a real-photograph corpus; Step 2 - Flask API and frontend verification including the Not-analysable state and the PDF export; Step 3 - EXIF orientation and Grad-CAM thread safety.",
+    "corpus": {
+      "genuine_lesion_photographs": 29,
+      "classroom_scenes": 12,
+      "tables": 20,
+      "books": 8,
+      "scenery": 36,
+      "defocused_photographs": 20,
+      "total_real_photographs": 125,
+      "corrupted_upload_variants": 8,
+      "invalid_file_type_variants": 14,
+      "source": "project test-images, two phone photographs of a lesion, and genuine photographs downloaded from Wikimedia Commons (classroom, book, table, scenery, defocus) - no synthetic substitutes for the ordinary-photo set."
+    },
+    "step1_api_matrix": {
+      "real_photographs": {
+        "http_200": 125,
+        "http_200_total": 125,
+        "non_200": 0,
+        "refused_by_domain_gate": 69,
+        "ordinary_photographs_reported_as_cancer": 0,
+        "schema_anomalies": 0,
+        "heatmap_missing_on_analysable": 0,
+        "heatmap_present_on_refused": 0
+      },
+      "corrupted_uploads": {
+        "cases": 8,
+        "rejected_400": 8,
+        "note": "a valid PNG renamed .jpg is accepted (200) because the content is a real image - this is correct, not a leak"
+      },
+      "invalid_file_types": {
+        "rejected_400": 11,
+        "correctly_accepted": [
+          "uppercase.JPEG",
+          "mixedcase.JpG",
+          "spaces .jpg"
+        ]
+      },
+      "batch": {
+        "mixed_batch": 200,
+        "corrupt_member": 400,
+        "invalid_type_member": 400,
+        "empty_list": 400,
+        "missing_field": 400,
+        "more_than_64_files": 400
+      },
+      "other_endpoints": {
+        "GET /health": 200,
+        "GET /": 200,
+        "unknown_route": 404
+      }
+    },
+    "step2_frontend_and_pdf": {
+      "browser": "Google Chrome (headless, Playwright) against the live Flask dev server",
+      "checks_run": 25,
+      "checks_passed": 25,
+      "checks_failed": 0,
+      "pdf_affected": {
+        "size_bytes": 476255,
+        "contains_LIKELY_AFFECTED": true,
+        "contains_heatmap_image": true,
+        "contains_disclaimer": true
+      },
+      "pdf_not_analysable": {
+        "size_bytes": 154005,
+        "contains_NOT_ANALYSABLE": true,
+        "contains_no_result_statement": true,
+        "contains_score_bars": false
+      },
+      "page_exceptions": 0,
+      "console_errors": "3, all expected (404 for the optional hero image, 404 for favicon.ico, 400 from the deliberate corrupted-upload test)"
+    },
+    "step3_bugs_found_and_fixed": [
+      {
+        "id": "ISSUE-22a",
+        "defect": "EXIF orientation was ignored. A portrait phone photograph was analysed rotated by 90 degrees while the browser displayed it upright, changing the verdict and misaligning the heatmap.",
+        "evidence": "melanoma test photograph: 0.6885 upright vs 0.1194 stored sideways with an orientation-6 tag (Affected -> Not Affected); mean |browser view - backend view| = 37.1 grey levels",
+        "fix": "inference.apply_exif_orientation(), applied at decode time in app.py (single and batch), in inference.preprocess_image(), in app.mobilenet_preprocess() and in domain.domain_scores().",
+        "verification": "rotated-and-tagged uploads now return 0.687 / 0.6987 / 0.6851 (orientations 6 / 3 / 8) against the 0.6885 baseline; browser heatmaps differ by a mean of 0.59 grey levels; images without an orientation tag are returned unchanged (identical object)."
+      },
+      {
+        "id": "ISSUE-22b",
+        "defect": "Grad-CAM was not thread-safe. Forward and full-backward hooks were registered on the shared model.features module and the gradients were taken through model.zero_grad() + target.backward().",
+        "evidence": "deterministic reproduction: two concurrent requests captured the identical activation tensor (each read the other's activations); 182 parameter tensors were left holding gradients (sum|grad| = 322856) after every call; PyTorch emitted a 'Full backward hook is firing...' UserWarning per request.",
+        "fix": "the heatmap gradient is taken with torch.autograd.grad(target, features) on the feature map returned by the forward pass - no hook is registered on the shared model and no parameter .grad is written.",
+        "verification": "CAM arrays bit-identical to the previous implementation (max|delta| = 0.000e+00 over 4 images x 2 target classes); parameter gradients stay at 0; concurrent heatmaps equal the sequential ones; the PyTorch warning is gone from the log."
+      },
+      {
+        "id": "ISSUE-21",
+        "defect": "A development server started on 2026-10-16 was still bound to port 5000 and kept receiving requests, so the first browser run exercised the pre-gate application.",
+        "fix": "the stale process was terminated; the port was verified to have a single listener before the browser tests were repeated."
+      }
+    ],
+    "step3_defect_found_not_changed": {
+      "id": "ISSUE-20",
+      "defect": "The input-domain gate refuses two genuine lesion photographs (clinical basal-cell-carcinoma photos, distance 0.8579 and 0.8772 against the 0.82 cut-off).",
+      "why_not_changed": "the genuine-lesion range (up to 0.877) overlaps the ordinary photograph range (0.79-0.94); lowering the cut-off re-admits the classroom photographs the gate exists to remove.",
+      "action": "documented with three options in DERMAI_UNRESOLVED_ISSUES.md; no threshold, weight or prediction array was changed."
+    },
+    "changes_applied": [
+      {
+        "file": "inference.py",
+        "change": "added apply_exif_orientation(); applied it in preprocess_image(); replaced the hook-based Grad-CAM with torch.autograd.grad"
+      },
+      {
+        "file": "app.py",
+        "change": "EXIF orientation applied to every decoded upload; the input-domain gate now runs before the prediction (no Grad-CAM for a refused image, identical API response); batch items always carry the heatmap key"
+      },
+      {
+        "file": "domain.py",
+        "change": "domain_scores() analyses the EXIF-oriented image"
+      },
+      {
+        "file": "tests/test_exif_gradcam.py",
+        "change": "CREATED - 7 new tests"
+      },
+      {
+        "file": "README.md",
+        "change": "EXIF handling, thread-safe Grad-CAM, new test file, current test results, new false-reject limitation"
+      },
+      {
+        "file": "DERMAI_UNRESOLVED_ISSUES.md",
+        "change": "ISSUE-17 resolved; ISSUE-20 opened; ISSUE-21 and ISSUE-22 added and resolved"
+      },
+      {
+        "file": "DERMAI_ODD_FALSE_POSITIVE_REPORT.md",
+        "change": "secondary findings 1 and 2 marked resolved; the 0.025-margin limitation corrected"
+      },
+      {
+        "file": "DERMAI_REVISION_LOG.md",
+        "change": "Phase G entry"
+      }
+    ],
+    "not_changed": {
+      "model_weights": "no .pt or .h5 file touched - SHA-256 and original mtimes (2026-09-28 / 2026-10-04) unchanged",
+      "thresholds": "CONVNEXT_THRESHOLD 0.525, MOBILENET_THRESHOLD 0.22, RISK_MEDIUM 0.3, RISK_HIGH 0.6, DOMAIN_* unchanged",
+      "prediction_arrays": "every .npy in results/ unchanged - SHA-256 identical",
+      "config.py": "not modified in this phase"
+    },
+    "verification_after_the_changes": {
+      "pytest_tests_q": "71 passed, 32 warnings in 80.36s (exit 0) - was 56 before",
+      "standalone_regression_suite": "22 passed, 0 failed, 0 errored (exit 0)",
+      "verify_reported_metrics_py": "exit 0 - the published ConvNeXt test and val metrics still reproduce from the stored arrays",
+      "audit_json_sha256_across_the_verifier_run": "identical",
+      "git": "6 tracked files modified, 1 new test file, nothing staged, no commit, no push, no deployment"
+    },
+    "backups_taken_before_editing": [
+      "D:/kilo-backups/dermai-step3-20261020-174500/app.py",
+      "D:/kilo-backups/dermai-step3-20261020-174500/inference.py",
+      "D:/kilo-backups/dermai-step3-20261020-174500/config.py",
+      "D:/kilo-backups/dermai-step3-20261020-174500/templates/index.html",
+      "D:/kilo-backups/dermai-step3-20261020-174500/static/js/app.js",
+      "D:/kilo-backups/dermai-step3-20261020-174500/README.md",
+      "D:/kilo-backups/dermai-step3-20261020-174500/tests/test_regression.py",
+      "D:/kilo-backups/dermai-step3-20261020-174500/tests/test_domain_gate.py",
+      "DERMAI_VERIFICATION_RESULTS.json.bak_20261020_pre_phase11"
+    ],
+    "git_state": {
+      "branch": "main",
+      "commit": "b38ed89",
+      "commit_created": false,
+      "push_performed": false
+    }
+  },
+  "phase12_local_app_and_issue20_2026_10_20": {
+    "status": "APPLIED_AND_VERIFIED",
+    "scope": "Step 1 - restore the local application; Step 2 - fix the input-domain gate (ISSUE-20) and the rejection message; Step 3 - test the API and the frontend end to end and run the complete regression suite",
+    "step1_local_app": {
+      "symptom": "http://127.0.0.1:5000/#guide returned ERR_CONNECTION_REFUSED (-102)",
+      "cause": "no Flask process was listening on port 5000 at all - there was no port conflict and no crashed server; the application simply was not running. Starting it with the project configuration (project venv, python app.py, port 5000) works and the model loads (ConvNeXt-Tiny, val_auc=0.9133, stage2 epoch 7).",
+      "verification": "GET /health 200 {\"status\":\"ok\",\"model_loaded\":true,\"threshold\":0.525}; GET / 200; GET /#guide 200 (the #guide fragment is a client-side anchor served by the same document)",
+      "issue21_recurrence": "a Start-Process launch that failed with a tool error left an orphaned server on 0.0.0.0:5000 from 18:06:24; a later correct start at 18:29:08 bound the same port and the OLDER process kept serving, so the pre-edit page and the pre-edit gate were being tested. The orphan was terminated and the port verified to have a single listener (netstat -ano | findstr LISTENING | findstr :5000). No unrelated process was killed."
+    },
+    "step2_issue20": {
+      "defect": "The input-domain gate refused genuine lesion photographs and, at the same time, admitted ordinary photographs.",
+      "evidence": "A real corpus of 100 photographs was downloaded from Wikimedia Commons for this investigation: 30 genuine skin-lesion photographs and 70 ordinary photographs (5 each in poster, document, screenshot, classroom, building, scenery, furniture, book, electronics, animal, food, vehicle, selfie, body_photo). 156 synthetic stand-ins were tried first and none exceeded the 0.82 cut-off (max 0.8064) while real photographs reach 0.929, so synthetic images cannot exercise the region the rule change affects.",
+      "root_cause": "MobileNetV2 is a CANCER classifier, not a lesion-presence detector. Its probability is lower on genuine lesion photographs (median 0.074) than on ordinary photographs (median 0.123), so the rule 'refuse inside the ambiguous band when the second opinion is below 0.22' refused genuine lesions preferentially - 6 of the 8 genuine lesions inside the band, including two the deployed model itself calls highly malignant (probability 0.824 and 0.919).",
+      "fix": "the gate is decided by the distance to the HAM10000 manifold alone: analyse while score <= DOMAIN_BAND_SPLIT, refuse above it. DOMAIN_BAND_SPLIT = (DOMAIN_SUSPICIOUS_DISTANCE + DOMAIN_MAX_DISTANCE) / 2 = 0.76 is DERIVED from the two existing thresholds - no new tuned number. The MobileNetV2 second opinion is still computed for images near the boundary and reported as second_opinion_cancer_prob for auditing, but it can no longer refuse or admit an image.",
+      "issue20_option_a_rejected": "the fix originally proposed for ISSUE-20 (let the second opinion veto a refusal above 0.82) was implemented first and measured on the same 100 photographs: genuine lesions refused 23.3% (unchanged), ordinary photographs accepted 32.9% (worse than 17.1%), ordinary photographs reported as CANCER 4 (worse than 0). It was also unable to rescue the far lesions reliably - the genuine clinical skin-tumour photograph SkinTumors-P9280849.jpg (distance 0.8301) has a MobileNetV2 probability of 0.066 and is refused under option A too. Option A was therefore reverted.",
+      "rule_comparison_on_100_real_photographs": {
+        "original_band_rule": {"genuine_lesions_refused": "7/30 (23.3%)", "ordinary_accepted": "12/70 (17.1%)", "ordinary_reported_as_cancer": 0},
+        "issue20_option_a": {"genuine_lesions_refused": "7/30 (23.3%)", "ordinary_accepted": "23/70 (32.9%)", "ordinary_reported_as_cancer": 4},
+        "distance_only_band_split_0_76_applied": {"genuine_lesions_refused": "2/30 (6.7%)", "ordinary_accepted": "9/70 (12.9%)", "ordinary_reported_as_cancer": 0}
+      },
+      "rejection_message": "Invalid Image - Please upload a suitable skin-lesion image (em dash), in the API prediction field and in the frontend",
+      "not_changed": {
+        "model_weights": "SHA-256 verified identical for convnext_tiny_best.pt, stage2_epoch12.pt, stage2_epoch13.pt and skin_cancer_mobilenetv2.h5",
+        "thresholds": "CONVNEXT_THRESHOLD 0.525, MOBILENET_THRESHOLD 0.22, DOMAIN_SUSPICIOUS_DISTANCE 0.70, DOMAIN_MAX_DISTANCE 0.82, RISK_* unchanged; DOMAIN_BAND_SPLIT is newly DERIVED from the two existing domain thresholds, no new tuned constant",
+        "prediction_arrays": "test_proba.npy, val_proba.npy, val_true.npy, val_proba_best_epoch.npy, val_true_best_epoch.npy and domain_reference.npy verified identical by SHA-256",
+        "checkpoints": "stage2_epoch12.pt and stage2_epoch13.pt verified identical by SHA-256",
+        "metrics": "metrics.json and threshold.json verified identical by SHA-256"
+      }
+    },
+    "step3_testing": {
+      "pytest_tests_dir": "73 passed, 0 failed (38 regression, 10 domain gate, 18 quality, 7 EXIF/Grad-CAM) - run with the live server stopped",
+      "api_end_to_end_on_100_real_photographs": {
+        "ordinary_photographs_refused": "61/70 (87.1%)",
+        "ordinary_photographs_accepted": "9/70 (12.9%)",
+        "ordinary_photographs_reported_as_cancer": 0,
+        "genuine_lesion_photographs_accepted": "28/30 (93.3%)",
+        "genuine_lesion_photographs_refused": "2/30 (6.7%)",
+        "rejected_responses_checked": 63,
+        "rejected_responses_carrying_a_verdict_probability_risk_level_or_heatmap": 0,
+        "rejected_responses_with_a_wrong_message": 0,
+        "per_category_refusal_of_ordinary_photographs": {"animal": "5/5", "building": "5/5", "classroom": "5/5", "electronics": "5/5", "food": "5/5", "furniture": "5/5", "scenery": "5/5", "selfie": "5/5", "vehicle": "5/5", "body_photo": "4/5", "book": "4/5", "screenshot": "4/5", "poster": "3/5", "document": "1/5"}
+      },
+      "degraded_and_malformed_uploads": {
+        "blurry_genuine_lesion": "HTTP 200, analysed, separate blur quality warning - the warning never blocks the analysis",
+        "corrupted_upload": "HTTP 400 - Cannot read the uploaded file as an image.",
+        "invalid_type_txt": "HTTP 400 - Only JPG/JPEG/PNG files are accepted.",
+        "invalid_type_pdf": "HTTP 400 - Only JPG/JPEG/PNG files are accepted.",
+        "empty_file": "HTTP 400 - Cannot read the uploaded file as an image."
+      },
+      "frontend_and_pdf_headless_chrome": {
+        "driver": "Google Chrome (headless) driven through the DevTools Protocol by a minimal WebSocket client written for this verification - no third-party package added to the project",
+        "genuine_lesion": "badge 'Affected', heatmap visible with 118430 bytes of overlay data, PDF 476243 bytes containing LIKELY AFFECTED / Affected / DermaScan - PASS",
+        "ordinary_photograph": "badge 'Invalid image', verdict 'Invalid Image - Please upload a suitable skin-lesion image', no heatmap row visible and 0 bytes of heatmap data, PDF 214495 bytes containing 'Invalid image' and NOT containing 'Affected' or 'LIKELY AFFECTED' - PASS",
+        "page_exceptions": 0,
+        "console_errors": 0
+      },
+      "environmental_note": "Running the pytest suite while the live server is running on this 7.7 GB machine exhausted memory and produced a Windows access violation inside the PyTorch forward pass of the batch test (tests/test_regression.py::test_batch_prediction). The same suite passes 73/73 with the server stopped, and the crash occurs inside the ConvNeXt forward pass, which runs before the gate decision logic, so it is an environment capacity limit rather than a code regression. Only this project's app.py processes were stopped; no unrelated process was touched."
+    },
+    "changes_applied": [
+      {"file": "domain.py", "change": "is_out_of_domain() decides from the distance alone (the second opinion is advisory); check_domain() and check_domains() follow the same rule; not_analysable_result() carries the new rejection message"},
+      {"file": "config.py", "change": "added the DERIVED DOMAIN_BAND_SPLIT constant and rewrote the calibration comment; DOMAIN_SUSPICIOUS_DISTANCE, DOMAIN_MAX_DISTANCE, CONVNEXT_THRESHOLD and MOBILENET_THRESHOLD untouched"},
+      {"file": "templates/index.html", "change": "the not-analysable state now shows 'Invalid Image - Please upload a suitable skin-lesion image' and the badge reads 'Invalid image'; the PDF badge label follows"},
+      {"file": "tests/test_domain_gate.py", "change": "test_decision_rules updated to the new rule; two new tests - the second opinion cannot change the decision, and the band split is derived from the existing thresholds (8 tests -> 10)"},
+      {"file": "results/convnext_tiny/domain_reference_meta.json", "change": "thresholds, rationale and a new calibration block recording the ISSUE-20 investigation"},
+      {"file": "README.md", "change": "gate description, refusal payload, measured rates and limitations updated"},
+      {"file": "DERMAI_ODD_FALSE_POSITIVE_REPORT.md", "change": "decision rule, validation and limitations updated to the measured evidence"},
+      {"file": "DERMAI_UNRESOLVED_ISSUES.md", "change": "ISSUE-20 resolved with the measured evidence; ISSUE-21 recurrence documented"}
+    ],
+    "backups_taken_before_editing": [
+      "C:/Users/MANJUN~1/AppData/Local/Temp/kilo/dermai_backup/domain.py",
+      "C:/Users/MANJUN~1/AppData/Local/Temp/kilo/dermai_backup/config.py",
+      "C:/Users/MANJUN~1/AppData/Local/Temp/kilo/dermai_backup/app.py",
+      "C:/Users/MANJUN~1/AppData/Local/Temp/kilo/dermai_backup/index.html"
+    ],
+    "git": {
+      "branch": "main",
+      "commit_created": false,
+      "push_performed": false,
+      "note": "no commit and no push, as requested"
+    }
+  },
+  "phase11_added": "2026-10-20",
+  "phase12_added": "2026-10-20"
+}

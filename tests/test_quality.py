@@ -316,7 +316,13 @@ def test_predict_blurry_image_still_predicts_with_warning(client):
 
 
 def test_predict_dark_and_overexposed_images_still_predict(client):
-    """Dark / overexposed images are warned about, never rejected."""
+    """Dark / overexposed images are warned about, never rejected by the quality layer.
+
+    The quality screen never rejects a decodable image. A separate input-domain
+    gate may still refuse an image that is not a skin photograph at all (a
+    uniform noise texture is not a lesion photo), and then it does so with
+    "not_analysable" rather than with a quality error.
+    """
     for img in (_dark_image(), _overexposed_image()):
         resp = _post_image("/predict", img)
         assert resp.status_code == 200
@@ -324,7 +330,13 @@ def test_predict_dark_and_overexposed_images_still_predict(client):
         assert data["success"] is True
         assert len(data["quality_warnings"]) >= 1
         assert data["quality_is_valid"] is True
-        assert data["verdict"] in ("affected", "not_affected")
+        if data.get("analysable") is False:
+            # Refused by the input-domain gate, not by the quality screen.
+            assert data["verdict"] == "not_analysable"
+            assert data["domain_in_domain"] is False
+            assert data["cancer_probability"] is None
+        else:
+            assert data["verdict"] in ("affected", "not_affected")
 
 
 def test_predict_invalid_image_still_rejected(client):

@@ -1,0 +1,86 @@
+{
+  "positive_class": 1,
+  "positive_class_name": "Cancer (dx in mel, bcc, akiec)",
+  "threshold_convnext": 0.5249999999999998,
+  "threshold_mobilenet_card": 0.22000000000000003,
+  "convnext_tiny": {
+    "test": {
+      "threshold": 0.5249999999999998,
+      "n": 1505,
+      "accuracy": 0.8604651162790697,
+      "precision": 0.6392857142857142,
+      "recall": 0.6215277777777778,
+      "sensitivity": 0.6215277777777778,
+      "specificity": 0.9170090386195563,
+      "f1": 0.6302816901408451,
+      "roc_auc": 0.8924324386012965,
+      "tn": 1116,
+      "fp": 101,
+      "fn": 109,
+      "tp": 179
+    },
+    "val": {
+      "threshold": 0.5249999999999998,
+      "n": 1500,
+      "accuracy": 0.8853333333333333,
+      "precision": 0.7289377289377289,
+      "recall": 0.67003367003367,
+      "sensitivity": 0.67003367003367,
+      "specificity": 0.9384871155444722,
+      "f1": 0.6982456140350877,
+      "roc_auc": 0.9133185554631937,
+      "tn": 1129,
+      "fp": 74,
+      "fn": 98,
+      "tp": 199
+    }
+  },
+  "mobilenetv2": {
+    "test": {
+      "threshold": 0.22000000000000003,
+      "accuracy": 0.7980066445182724,
+      "precision": 0.481981981981982,
+      "recall": 0.7430555555555556,
+      "f1": 0.5846994535519126,
+      "roc_auc": 0.8623664749383729,
+      "tn": 987,
+      "fp": 230,
+      "fn": 74,
+      "tp": 214,
+      "n": 1505
+    },
+    "test_at_0.50": {
+      "threshold": 0.5,
+      "accuracy": 0.8491694352159468,
+      "precision": 0.6380090497737556,
+      "recall": 0.4895833333333333,
+      "f1": 0.5540275049115914,
+      "roc_auc": 0.8623664749383729,
+      "tn": 1137,
+      "fp": 80,
+      "fn": 147,
+      "tp": 141,
+      "n": 1505
+    },
+    "val": {
+      "threshold": 0.22000000000000003,
+      "accuracy": 0.832,
+      "precision": 0.5544794188861986,
+      "recall": 0.7710437710437711,
+      "f1": 0.6450704225352113,
+      "roc_auc": 0.8946712903487634,
+      "tn": 1019,
+      "fp": 184,
+      "fn": 68,
+      "tp": 229,
+      "n": 1500
+    },
+    "single_image_predictions_count": 6
+  },
+  "verification_status": {
+    "convnext_test": "VERIFIED",
+    "convnext_val": "VERIFIED",
+    "mobilenet_test": "SUPPORTED_BY_ARTIFACT_NOT_REDERIVED",
+    "mobilenet_val": "SUPPORTED_BY_ARTIFACT_NOT_REDERIVED"
+  }
+}

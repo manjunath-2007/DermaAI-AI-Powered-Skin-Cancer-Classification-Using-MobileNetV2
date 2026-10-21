@@ -46,8 +46,8 @@ skin-cancer-app/
 │   ├── convnext_tiny/              # ConvNeXt-Tiny training outputs
 │   │   ├── checkpoints/
 │   │   │   ├── stage2_epoch12.pt   # Training checkpoint
-│   │   │   └── stage2_epoch13.pt   # Training checkpoint (ACTIVE — used by config.py)
-│   │   ├── convnext_tiny_best.pt   # Best model checkpoint — PRODUCTION
+│   │   │   └── stage2_epoch13.pt   # Training checkpoint (FALLBACK — referenced by config.py:CONVNEXT_BEST)
+│   │   ├── convnext_tiny_best.pt   # Best model checkpoint — PRODUCTION (stage-2 epoch 7; referenced by config.py:CONVNEXT_CKPT)
 │   │   ├── metrics.json            # Full evaluation metrics
 │   │   ├── config.json             # Training configuration
 │   │   ├── threshold.json          # Threshold selection record
@@ -134,8 +134,8 @@ skin-cancer-app/
 | `model/skin_cancer_mobilenetv2.h5` | MobileNetV2 Keras weights (~22 MB). Required for MobileNetV2 inference. |
 | `model/model_card.json` | Full evaluation card: metrics, ROC curve data, provenance, calibration. |
 | `model/threshold.txt` | MobileNetV2 threshold (0.22). |
-| `results/convnext_tiny/convnext_tiny_best.pt` | ConvNeXt-Tiny best checkpoint. Required for inference. |
-| `results/convnext_tiny/checkpoints/stage2_epoch13.pt` | Active checkpoint referenced by `config.py:CONVNEXT_CKPT`. |
+| `results/convnext_tiny/convnext_tiny_best.pt` | ConvNeXt-Tiny best checkpoint (stage-2 epoch 7). Active checkpoint referenced by `config.py:CONVNEXT_CKPT`; produced the published metrics and the 0.525 threshold. |
+| `results/convnext_tiny/checkpoints/stage2_epoch13.pt` | Fallback checkpoint referenced by `config.py:CONVNEXT_BEST`. Its weights are NOT the ones behind the published metrics. |
 | `templates/index.html` | Frontend HTML. |
 | `static/css/style.css` | Frontend CSS. |
 | `static/js/app.js` | Frontend JavaScript. |
@@ -346,8 +346,8 @@ skin-cancer-app/
 | `test_regression.py` uses relative paths `test-images/...` | Must stay in project root OR paths must be updated. **Moving requires path fix.** |
 | `investigate_gradcam.py` has hardcoded absolute path `sys.path.insert(0, r'C:\Users\Manjunath\...')` | This is a research script, not production. Path is only needed when run standalone. |
 | `make_c01_summary.py` imports `dermai_exp.run_exp.context` at module level (not in `main()`) | Running it triggers HAM10000 dataset loading. Moving is safe; running requires dataset. |
-| `results/convnext_tiny/checkpoints/stage2_epoch13.pt` is referenced by `config.py:CONVNEXT_CKPT` | Must not be moved or renamed. |
-| `results/convnext_tiny/convnext_tiny_best.pt` is referenced by `config.py:CONVNEXT_BEST` | Must not be moved or renamed. |
+| `results/convnext_tiny/convnext_tiny_best.pt` is referenced by `config.py:CONVNEXT_CKPT` | Must not be moved or renamed. |
+| `results/convnext_tiny/checkpoints/stage2_epoch13.pt` is referenced by `config.py:CONVNEXT_BEST` | Must not be moved or renamed. |
 | `model/skin_cancer_mobilenetv2.h5` is referenced by `config.py:MOBILENET_PATH` | Must not be moved or renamed. |
 | `.gitignore` currently ignores `*.jpeg` and `*.jpg` globally | This would exclude `test-images/*.jpg` from git. The test images are needed for the regression suite. |
 
@@ -401,8 +401,8 @@ skin-cancer-app/
 
 ```
 config.py
-  CONVNEXT_CKPT  → results/convnext_tiny/checkpoints/stage2_epoch13.pt  [MUST EXIST]
-  CONVNEXT_BEST  → results/convnext_tiny/convnext_tiny_best.pt           [MUST EXIST]
+  CONVNEXT_CKPT  → results/convnext_tiny/convnext_tiny_best.pt           [MUST EXIST]
+  CONVNEXT_BEST  → results/convnext_tiny/checkpoints/stage2_epoch13.pt   [MUST EXIST]
   MOBILENET_PATH → model/skin_cancer_mobilenetv2.h5                      [MUST EXIST]
 
 test_regression.py

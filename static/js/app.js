@@ -176,6 +176,19 @@ const CLASS_LABELS = {
 function showResults(d) {
   showQualityWarnings(d.quality_warnings);
 
+  // The backend refuses to diagnose images outside the lesion domain.
+  if (d.analysable === false) {
+    $('resultLabel').textContent = 'This image cannot be analysed';
+    $('resultDesc').textContent  = "This doesn't look like a close-up photo of a skin lesion, so no result was produced. Please upload a photo of the skin area that fills the frame, in focus and in good light.";
+    $('riskPill').className = 'risk-pill low';
+    $('riskPill').textContent = 'No result produced';
+    $('binaryBars').hidden = true;
+    $('multiClassBars').hidden = true;
+    $('confidenceSection').hidden = true;
+    resultsCard.hidden = false;
+    return;
+  }
+
   // Check if multi-class probabilities are provided
   if (d.probabilities && typeof d.probabilities === 'object') {
     showMultiClassResults(d);
